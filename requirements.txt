@@ -1,0 +1,12 @@
+ftfy
+regex
+tqdm
+omegaconf
+pytorch-lightning
+kornia
+einops
+wget
+stegano
+python-xmp-toolkit
+imgtag
+pillow==7.1.2 

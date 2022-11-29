@@ -1,1 +1,8 @@
 vqgan_model/
+taming-transformers/
+dist/
+__pycache__/
+taming_transformers.egg-info/
+taming/
+steps/
+build/
