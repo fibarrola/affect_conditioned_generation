@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
  
 sys.path.append('taming-transformers')
+sys.path.append('data')
 from IPython import display
 from base64 import b64encode
 from omegaconf import OmegaConf
@@ -28,7 +29,25 @@ from libxmp import *         # metadatos
 import libxmp                # metadatos
 from stegano import lsb
 import json
+import pickle
+# from pytorch_lighting import seed_everything
+from src.mlp import MLP
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+
+# seed_everything(42)
+
+mlp = MLP([64, 32]).to('cuda:0')
+mlp.load_state_dict(torch.load('data/model_mixed.pt'))
+with open('data/data_handler_mixed.pkl', 'rb') as f:
+    data_handler = pickle.load(f)
+
+target_affect = torch.matmul(torch.ones((64, 1), device=device), torch.tensor([[0.5,0.,0.5]], device=device))
+
+
+
  
 def sinc(x):
     return torch.where(x != 0, torch.sin(math.pi * x) / (math.pi * x), x.new_ones([]))
@@ -200,15 +219,15 @@ def download_img(img_url):
         return
 
 
-textos = "a fantasy world" #@param {type:"string"}
+textos = "Flaming landscape" #@param {type:"string"}
 ancho =  480#@param {type:"number"}
 alto =  480#@param {type:"number"}
 modelo = "vqgan_imagenet_f16_16384" #@param ["vqgan_imagenet_f16_16384", "vqgan_imagenet_f16_1024", "wikiart_1024", "wikiart_16384", "coco", "faceshq", "sflckr", "ade20k", "ffhq", "celebahq", "gumbel_8192"]
 intervalo_imagenes =  50#@param {type:"number"}
 imagen_inicial = None#@param {type:"string"}
 imagenes_objetivo = None#@param {type:"string"}
-seed = -1#@param {type:"number"}
-max_iteraciones = -1#@param {type:"number"}
+seed = 1 #-1#@param {type:"number"}
+max_iteraciones = 2500#@param {type:"number"}
 input_images = ""
 
 nombres_modelos={"vqgan_imagenet_f16_16384": 'ImageNet 16384',"vqgan_imagenet_f16_1024":"ImageNet 1024", 
@@ -261,7 +280,6 @@ args = argparse.Namespace(
 )
 
 #@title Hacer la ejecución...
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 if textos:
     print('Using texts:', textos)
@@ -375,9 +393,9 @@ def checkin(i, losses):
     losses_str = ', '.join(f'{loss.item():g}' for loss in losses)
     tqdm.write(f'i: {i}, loss: {sum(losses).item():g}, losses: {losses_str}')
     out = synth(z)
-    TF.to_pil_image(out[0].cpu()).save('progress.png')
-    add_stegano_data('progress.png')
-    add_xmp_data('progress.png')
+    TF.to_pil_image(out[0].cpu()).save('results/progress.png')
+    add_stegano_data('results/progress.png')
+    add_xmp_data('results/progress.png')
 
 def ascend_txt():
     global i
@@ -391,12 +409,8 @@ def ascend_txt():
 
     for prompt in pMs:
         result.append(prompt(iii))
-    img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:,:,:]
-    img = np.transpose(img, (1, 2, 0))
-    filename = f"steps/{i:04}.png"
-    imageio.imwrite(filename, np.array(img))
-    add_stegano_data(filename)
-    add_xmp_data(filename)
+
+    result.append(F.mse_loss(mlp(iii),target_affect))
     return result
 
 def train(i):
