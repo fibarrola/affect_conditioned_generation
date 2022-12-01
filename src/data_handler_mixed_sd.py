@@ -13,10 +13,10 @@ class DataHandler:
         self.clip_model, preprocess = clip.load('ViT-B/32', self.device, jit=False)
         with open("data/img_Vmn.pkl", "rb") as f:
             V = pickle.load(f)
-        self.V_img = V.permute(1,0).to(torch.float32).to(self.device)
+        self.V_img = V.permute(1, 0).to(torch.float32).to(self.device)
         with open("data/img_Vsd.pkl", "rb") as f:
             V = pickle.load(f)
-        self.Vsd_img = V.permute(1,0).to(torch.float32).to(self.device)
+        self.Vsd_img = V.permute(1, 0).to(torch.float32).to(self.device)
         with open("data/img_Z.pkl", "rb") as f:
             Z = pickle.load(f)
         self.Z_img = Z.to(torch.float32).to(self.device)
@@ -34,7 +34,7 @@ class DataHandler:
         )
         sd_dim_names = ['V.SD.Sum', 'A.SD.Sum', 'D.SD.Sum']
         self.Vsd_txt = torch.tensor(
-            fil_df[dim_names].values, device=self.device, dtype=torch.float32
+            fil_df[sd_dim_names].values, device=self.device, dtype=torch.float32
         )
         self.scaler_Z = Scaler(self.Z_txt, scaling)
         self.scaler_V = Scaler(self.V_txt, scaling)
@@ -47,9 +47,9 @@ class DataHandler:
         V_img = self.scaler_V.scale(self.V_img)
         dataset_txt = TensorDataset(Z_txt, V_txt, self.Vsd_txt)
         dataset_img = TensorDataset(Z_img, V_img, self.Vsd_img)
-        (ds_train, ds_test) = random_split(dataset_txt, [round(len(dataset_txt)*train_ratio), round(len(dataset_txt)*(1-train_ratio))])
+        (ds_train, ds_test) = random_split(dataset_txt, [round(len(dataset_txt) * train_ratio), round(len(dataset_txt) * (1 - train_ratio))])
         self.txt_train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
         self.txt_test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)
-        (ds_train, ds_test) = random_split(dataset_img, [round(len(dataset_img)*train_ratio), round(len(dataset_img)*(1-train_ratio))])
+        (ds_train, ds_test) = random_split(dataset_img, [round(len(dataset_img) * train_ratio), round(len(dataset_img) * (1 - train_ratio))])
         self.img_train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
         self.img_test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)

@@ -10,3 +10,5 @@ stegano
 python-xmp-toolkit
 imgtag
 pillow==7.1.2 
+black
+flake8
