@@ -2,6 +2,7 @@ import torch
 import PIL.Image
 import requests
 import numpy as np
+import io
 
 
 def N_max_elements(xx, N):
