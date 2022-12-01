@@ -17,6 +17,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class AffectiveGenerator():
+    @torch.no_grad()
     def __init__(self, vqg_name="vqgan_model/vqgan_imagenet_f16_16384", im_size=[480, 480], cutn=64):
         self.mlp = MLP([64, 32]).to('cuda:0')
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
@@ -36,11 +37,28 @@ class AffectiveGenerator():
         self.toksX, self.toksY = im_size[0] // f, im_size[1] // f
         self.sideX, self.sideY = self.toksX * f, self.toksY * f
 
-    def initialize(self, prompts, v=None, img_0=None, target_imgs=None, seed=None, lr=0.1, noise_prompt_seeds=[], noise_prompt_weights=[], im_suffix=''):
-        self.img_savedir = f"results/{prompts.replace(' ','_')}_{im_suffix}.png" 
+    @torch.no_grad()
+    def process_epa(self, v, prompts):
+        if v[0]==None and v[1]==None and v[2]==None:
+            return []
+        if v[0]==None or v[1]==None or v[2]==None:
+            tokens = clip.tokenize(prompts).to(device)
+            z = self.clip_model.encode_text(tokens).to(torch.float32)
+            v0 = self.mlp(z)
+            for k in range(3):
+                if not(v[k]):
+                    v[k] = v0[0,k].to('cpu').item()
+        
+        return torch.matmul(torch.ones((self.make_cutouts.cutn, 1), device=device), torch.tensor([v], device=device, requires_grad=False))
+
+
+    @torch.no_grad()
+    def initialize(self, prompts, v=[None,None,None], img_0=None, target_imgs=None, seed=None, lr=0.1, noise_prompt_seeds=[], noise_prompt_weights=[], im_suffix='', noise_0=[]):
+        self.img_savedir = f"results/{prompts.replace(' ','_')}_{im_suffix}.png"
+
         prompts = [prompt.strip() for prompt in prompts.split("|")]
 
-        self.target_affect = torch.matmul(torch.ones((self.make_cutouts.cutn, 1), device=device), torch.tensor([v], device=device, requires_grad=False)) if v else None
+        self.target_affect = self.process_epa(v, prompts)
 
         torch.manual_seed(seed) if seed else torch.seed()
 
@@ -52,7 +70,8 @@ class AffectiveGenerator():
             pil_image = pil_image.resize((self.sideX, self.sideY), Image.LANCZOS)
             self.z, *_ = self.vqg_model.encode(TF.to_tensor(pil_image).to(device).unsqueeze(0) * 2 - 1)
         else:
-            one_hot = F.one_hot(torch.randint(self.n_toks, [self.toksY * self.toksX], device=device), self.n_toks).float()
+            noise_0 = noise_0 if len(noise_0)>0 else torch.randint(self.n_toks, [self.toksY * self.toksX], device=device)
+            one_hot = F.one_hot(noise_0, self.n_toks).float()
             self.z = one_hot @ self.vqg_model.quantize.embedding.weight
             self.z = self.z.view([-1, self.toksY, self.toksX, self.e_dim]).permute(0, 3, 1, 2)
         self.z_orig = self.z.clone()
@@ -107,7 +126,9 @@ class AffectiveGenerator():
         for prompt in self.pMs:
             result.append(prompt(iii))
 
-        result.append(F.mse_loss(self.mlp(iii),self.target_affect))
+        if len(self.target_affect)>0:
+            result.append(F.mse_loss(self.mlp(iii),self.target_affect))
+            
         return result
 
     def train(self, iter=0):
