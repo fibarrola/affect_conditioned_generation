@@ -7,11 +7,25 @@ from torch.nn.functional import sigmoid
 
 parser = argparse.ArgumentParser(description='Training Parameters')
 parser.add_argument("--num_epochs", type=int, default=2500)
-parser.add_argument("--scaling", type=str, default="uniform", help="scaling for input and output data. Can be 'uniform', 'whiten', 'normalize' or 'none'")
+parser.add_argument(
+    "--scaling",
+    type=str,
+    default="uniform",
+    help="scaling for input and output data. Can be 'uniform', 'whiten', 'normalize' or 'none'",
+)
 parser.add_argument("--lr", type=float, help="learning rate", default=0.00007)
-parser.add_argument("--layer_dims", type=str, help="layer dimensions. Separate with |", default="64|32")
-parser.add_argument("--use_dropout", type=bool, help="Use dropout for training?", default=True)
-parser.add_argument("--use_sigmoid", type=bool, help="Use sigmoid at the end of last layer?", default=False)
+parser.add_argument(
+    "--layer_dims", type=str, help="layer dimensions. Separate with |", default="64|32"
+)
+parser.add_argument(
+    "--use_dropout", type=bool, help="Use dropout for training?", default=True
+)
+parser.add_argument(
+    "--use_sigmoid",
+    type=bool,
+    help="Use sigmoid at the end of last layer?",
+    default=False,
+)
 config = parser.parse_args()
 
 data_handler = DataHandler("data/Ratings_Warriner_et_al.csv")
