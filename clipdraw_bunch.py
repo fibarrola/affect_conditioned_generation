@@ -22,11 +22,11 @@ parser.add_argument("--normalize_clip", type=bool, default=True)
 
 # Canvas parameters
 parser.add_argument(
-    "--num_paths", type=int, help="number of strokes to add", default=384
+    "--num_paths", type=int, help="number of strokes to add", default=512
 )
 parser.add_argument("--canvas_h", type=int, help="canvas height", default=224)
 parser.add_argument("--canvas_w", type=int, help="canvas width", default=224)
-parser.add_argument("--max_width", type=int, help="max px width", default=40)
+parser.add_argument("--max_width", type=int, help="max px width", default=20)
 
 # Algorithm parameters
 parser.add_argument(
@@ -45,6 +45,7 @@ parser.add_argument(
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
 )
+
 args = parser.parse_args()
 
 
@@ -60,7 +61,6 @@ save_path = str(save_path) + '/'
 t0 = time.time()
 
 PROMPTS = [
-    'Waves hitting the rocks',
     'The sea at nightfall',
     'A dark forest',
     'A strange animal',

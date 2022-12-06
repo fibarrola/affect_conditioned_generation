@@ -15,32 +15,34 @@ pydiffvg.set_device(torch.device('cuda:0') if torch.cuda.is_available() else 'cp
 
 
 class CLIPAffDraw:
-    def __init__(self, args):
+    def __init__(self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.model, preprocess = clip.load('ViT-B/32', self.device, jit=False)
-        self.canvas_w = args.canvas_w
-        self.canvas_h = args.canvas_h
-        self.augment_trans = get_augment_trans(args.canvas_w, args.normalize_clip)
-        self.drawing = Drawing(args.canvas_w, args.canvas_h)
+        self.canvas_w = canvas_w
+        self.canvas_h = canvas_h
+        self.augment_trans = get_augment_trans(canvas_w, normalize_clip)
+        self.drawing = Drawing(canvas_w, canvas_h)
         self.drawing_area = {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1}
-        self.num_augs = args.num_augs
+        self.num_augs = num_augs
         self.mlp = MLP([64, 32]).to('cuda:0')
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
         with open('data/data_handler_mixed.pkl', 'rb') as f:
             self.data_handler = pickle.load(f)
 
-    def process_text(self, args, v):
+    @torch.no_grad()
+    def process_text(self, prompt, neg_prompt_1=None, neg_prompt_2=None, v):
         self.target_affect = torch.matmul(
             torch.ones((self.num_augs, 1), device=self.device),
             torch.tensor([v], device=self.device, requires_grad=False),
         )
-        text_input = clip.tokenize(args.prompt).to(self.device)
-        text_input_neg1 = clip.tokenize(args.neg_prompt).to(self.device)
-        text_input_neg2 = clip.tokenize(args.neg_prompt_2).to(self.device)
-        with torch.no_grad():
-            self.text_features = self.model.encode_text(text_input)
-            self.text_features_neg1 = self.model.encode_text(text_input_neg1)
-            self.text_features_neg2 = self.model.encode_text(text_input_neg2)
+        self.use_neg_prompts = not (neg_prompt_1 is None)
+        tokens = clip.tokenize(prompt).to(self.device)
+        self.text_features = self.model.encode_text(tokens)
+        if self.use_neg_prompts:
+            neg_tokens_1 = clip.tokenize(neg_prompt_1).to(self.device)
+            neg_tokens_2 = clip.tokenize(neg_prompt_2).to(self.device)
+            self.text_features_neg1 = self.model.encode_text(neg_tokens_1)
+            self.text_features_neg2 = self.model.encode_text(neg_tokens_2)
 
     def add_random_shapes(self, num_rnd_traces):
         '''
@@ -56,7 +58,8 @@ class CLIPAffDraw:
         )
         self.drawing.add_shapes(shapes, shape_groups, fixed=False)
 
-    def initialize_variables(self):
+    def initialize_variables(self, max_width=40):
+        self.max_width = max_width
         self.points_vars = []
         self.stroke_width_vars = []
         self.color_vars = []
@@ -89,7 +92,7 @@ class CLIPAffDraw:
         img = img[:, :, :3].unsqueeze(0).permute(0, 3, 1, 2)  # NHWC -> NCHW
         return img
 
-    def run_epoch(self, t, args):
+    def run_epoch(self, t):
         self.points_optim.zero_grad()
         self.width_optim.zero_grad()
         self.color_optim.zero_grad()
@@ -102,15 +105,15 @@ class CLIPAffDraw:
         loss_aff = 0
 
         img_augs = []
-        for n in range(args.num_augs):
+        for n in range(self.num_augs):
             img_augs.append(self.augment_trans(img))
         im_batch = torch.cat(img_augs)
         img_features = self.model.encode_image(im_batch)
-        for n in range(args.num_augs):
+        for n in range(self.num_augs):
             loss_sem -= torch.cosine_similarity(
                 self.text_features, img_features[n : n + 1], dim=1
             )
-            if args.use_neg_prompts:
+            if self.use_neg_prompts:
                 loss_sem += (
                     torch.cosine_similarity(
                         self.text_features_neg1, img_features[n : n + 1], dim=1
@@ -135,7 +138,7 @@ class CLIPAffDraw:
         self.width_optim.step()
         self.color_optim.step()
         for trace in self.drawing.traces:
-            trace.shape.stroke_width.data.clamp_(1.0, args.max_width)
+            trace.shape.stroke_width.data.clamp_(1.0, self.max_width)
             trace.shape_group.stroke_color.data.clamp_(0.0, 1.0)
 
         self.losses = {
