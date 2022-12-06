@@ -28,7 +28,6 @@ config = parser.parse_args()
 with open('data/data_handler_mixed.pkl', 'rb') as f:
     data_handler = pickle.load(f)
 
-
 with torch.no_grad():
     mlp = MLP([64, 32]).to('cuda:0')
     mlp.load_state_dict(torch.load('data/model_mixed.pt'))

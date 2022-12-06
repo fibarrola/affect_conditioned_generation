@@ -2,10 +2,12 @@ vqgan_model/
 taming-transformers/
 dist/
 __pycache__/
-taming_transformers.egg-info/
+*.egg-info/
 taming/
 steps/
 build/
 data/
 olds/
 results/
+cicada/
+diffvg/
