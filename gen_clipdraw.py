@@ -16,13 +16,13 @@ parser.add_argument(
     "--num_iter", type=int, help="maximum algorithm iterations", default=1500
 )
 parser.add_argument(
-    "--E", type=float, help="Evaluation (bad<good) in [0,1]", default=None,
+    "--E", type=float, help="Evaluation (bad<good) in [0,1]", default=0.5,
 )
 parser.add_argument(
-    "--P", type=float, help="Potency (weak<strong) in [0,1]", default=None,
+    "--P", type=float, help="Potency (weak<strong) in [0,1]", default=0.5,
 )
 parser.add_argument(
-    "--A", type=float, help="Activity (calm<exciting) in [0,1]", default=None,
+    "--A", type=float, help="Activity (calm<exciting) in [0,1]", default=0.5,
 )
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
@@ -60,7 +60,7 @@ for t in range(args.num_iter):
                 cicada.losses['affective'],
             )
         )
-    cicada.run_epoch(t, args)
+    cicada.run_epoch(t)
 
 k = 0
 while os.path.exists(f"{save_path}{args.prompt.replace(' ','_')}_{k}.png"):

@@ -75,12 +75,13 @@ vv = {
 }
 
 for prompt in PROMPTS:
-    args.prompt = prompt
     for v in vv:
         seed_everything(1)
 
-        cicada = CLIPAffDraw(args)
-        cicada.process_text(args, v=vv[v])
+        cicada = CLIPAffDraw()
+        cicada.process_text(
+            prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=vv[v],
+        )
 
         time_str = (datetime.datetime.today() + datetime.timedelta(hours=11)).strftime(
             "%Y_%m_%d_%H_%M_%S"
@@ -102,7 +103,7 @@ for prompt in PROMPTS:
                         cicada.losses['affective'],
                     )
                 )
-            cicada.run_epoch(t, args)
+            cicada.run_epoch(t)
 
         k = 0
         while os.path.exists(f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png"):
