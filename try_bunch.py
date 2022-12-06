@@ -21,12 +21,12 @@ PROMPTS = [
 MAX_ITER = 1500
 N_TRIALS = 3
 vv = {
-    'high_E': [1.0, 0.5, 0.5],
-    'low_E': [0.0, 0.5, 0.5],
-    'high_P': [0.5, 1.0, 0.5],
-    'low_P': [0.5, 0.0, 0.5],
-    'high_A': [0.5, 0.5, 1.0],
-    'low_A': [0.5, 0.5, 0.0],
+    'high_E': [1.0, None, None],
+    'low_E': [0.0, None, None],
+    'high_P': [None, 1.0, None],
+    'low_P': [None, 0.0, None],
+    'high_A': [None, None, 1.0],
+    'low_A': [None, None, 0.0],
 }
 
 affective_generator = AffectiveGenerator()
@@ -42,7 +42,7 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                im_suffix=f"{trial}_{v}",
+                im_suffix=f"noned_{trial}_{v}",
                 seed=trial,
                 noise_0=noise_0,
             )
