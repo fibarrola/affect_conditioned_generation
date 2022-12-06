@@ -1,8 +1,5 @@
 from src.clipdraw import CLIPAffDraw
-import torch
 import pydiffvg
-import datetime
-import time
 from pathlib import Path
 import argparse
 import os
@@ -10,9 +7,7 @@ import os
 parser = argparse.ArgumentParser(description='Sketching Agent Args')
 
 # CLIP prompts
-parser.add_argument(
-    "--prompt", type=str, help="what to draw", default="A red chair."
-)
+parser.add_argument("--prompt", type=str, help="what to draw", default="A red chair.")
 parser.add_argument(
     "--num_paths", type=int, help="number of strokes to add", default=512
 )
@@ -35,7 +30,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-
 # Build dir if does not exist & make sure using a
 # trailing / or not does not matter
 save_path = Path("results/").joinpath(args.save_path)
@@ -47,7 +41,7 @@ cicada.process_text(
     prompt=args.prompt,
     neg_prompt_1="Written words.",
     neg_prompt_2="Text",
-    v=[args.E, args.P, args.A]
+    v=[args.E, args.P, args.A],
 )
 
 cicada.add_random_shapes(args.num_paths)
@@ -57,21 +51,20 @@ cicada.initialize_optimizer()
 # Run the main optimization loop
 for t in range(args.num_iter):
 
-    if (t + 1) % (args.num_iter//50) == 0:
+    if (t + 1) % (args.num_iter // 50) == 0:
         print(
             'Step: {} \t Loss: {:.3f} \t Semantic Loss: {:.3f} \t Affective Loss: {:.3f}'.format(
                 t + 1,
-                cicada.losses['global'], cicada.losses['semantic'], cicada.losses['affective']
+                cicada.losses['global'],
+                cicada.losses['semantic'],
+                cicada.losses['affective'],
             )
         )
     cicada.run_epoch(t, args)
 
-k=0
-while os.path.exists(f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png"):
+k = 0
+while os.path.exists(f"{save_path}{args.prompt.replace(' ','_')}_{k}.png"):
     k += 1
 pydiffvg.imwrite(
-    cicada.img,
-    f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png",
-    gamma=1,
+    cicada.img, f"{save_path}{args.prompt.replace(' ','_')}_{k}.png", gamma=1,
 )
-

@@ -4,6 +4,7 @@ import random
 import numpy as np
 from torchvision import transforms
 
+
 def treebranch_initialization(
     drawing,
     num_traces,

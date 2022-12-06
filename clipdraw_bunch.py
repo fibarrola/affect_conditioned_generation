@@ -12,9 +12,7 @@ import os
 parser = argparse.ArgumentParser(description='Sketching Agent Args')
 
 # CLIP prompts
-parser.add_argument(
-    "--prompt", type=str, help="what to draw", default="A red chair."
-)
+parser.add_argument("--prompt", type=str, help="what to draw", default="A red chair.")
 parser.add_argument("--neg_prompt", type=str, default="Written words.")
 parser.add_argument("--neg_prompt_2", type=str, default="Text.")
 parser.add_argument("--use_neg_prompts", type=bool, default=True)
@@ -95,26 +93,26 @@ for prompt in PROMPTS:
         # Run the main optimization loop
         for t in range(args.num_iter):
 
-            if (t + 1) % (args.num_iter//50) == 0:
+            if (t + 1) % (args.num_iter // 50) == 0:
                 print(
                     'Step: {} \t Loss: {:.3f} \t Semantic Loss: {:.3f} \t Affective Loss: {:.3f}'.format(
                         t + 1,
-                        cicada.losses['global'], cicada.losses['semantic'], cicada.losses['affective']
+                        cicada.losses['global'],
+                        cicada.losses['semantic'],
+                        cicada.losses['affective'],
                     )
                 )
             cicada.run_epoch(t, args)
 
-        k=0
+        k = 0
         while os.path.exists(f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png"):
             k += 1
 
         pydiffvg.imwrite(
-            cicada.img,
-            f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png",
-            gamma=1,
+            cicada.img, f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png", gamma=1,
         )
 
-
-
         time_sec = round(time.time() - t0)
-        print(f"Elapsed time: {time_sec//60} min, {time_sec-60*(time_sec//60)} seconds.")
+        print(
+            f"Elapsed time: {time_sec//60} min, {time_sec-60*(time_sec//60)} seconds."
+        )

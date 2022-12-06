@@ -1,10 +1,9 @@
 import torch
+import subprocess
 
 print("Cuda available:", "yes" if torch.cuda.is_available() else "no")
 print("Pytorch cuda version:", torch.version.cuda)
 print("Pytorch version:", torch.__version__)
-
-import subprocess
 
 
 CUDA_version = [

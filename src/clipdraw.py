@@ -13,7 +13,6 @@ pydiffvg.set_use_gpu(torch.cuda.is_available())
 pydiffvg.set_device(torch.device('cuda:0') if torch.cuda.is_available() else 'cpu')
 
 
-
 class CLIPAffDraw:
     def __init__(self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -30,7 +29,9 @@ class CLIPAffDraw:
             self.data_handler = pickle.load(f)
 
     @torch.no_grad()
-    def process_text(self, prompt, neg_prompt_1=None, neg_prompt_2=None, v):
+    def process_text(
+        self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5]
+    ):
         self.target_affect = torch.matmul(
             torch.ones((self.num_augs, 1), device=self.device),
             torch.tensor([v], device=self.device, requires_grad=False),
@@ -52,9 +53,7 @@ class CLIPAffDraw:
             num_rnd_traces: Int;
         '''
         shapes, shape_groups = treebranch_initialization(
-            self.drawing,
-            num_rnd_traces,
-            self.drawing_area,
+            self.drawing, num_rnd_traces, self.drawing_area,
         )
         self.drawing.add_shapes(shapes, shape_groups, fixed=False)
 
@@ -126,9 +125,11 @@ class CLIPAffDraw:
                     )
                     * 0.3
                 )
-        loss_aff = F.mse_loss(self.mlp(img_features.to(torch.float32)), self.target_affect)
+        loss_aff = F.mse_loss(
+            self.mlp(img_features.to(torch.float32)), self.target_affect
+        )
 
-        loss = loss_sem + 5*loss_aff
+        loss = loss_sem + 5 * loss_aff
 
         # Backpropagate the gradients.
         loss.backward()
@@ -144,5 +145,5 @@ class CLIPAffDraw:
         self.losses = {
             'global': loss.to('cpu').item(),
             'semantic': loss_sem.to('cpu').item(),
-            'affective': loss_aff.to('cpu').item()
+            'affective': loss_aff.to('cpu').item(),
         }
