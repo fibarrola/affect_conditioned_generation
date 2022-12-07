@@ -86,11 +86,10 @@ class AffectiveGenerator:
         lr=0.1,
         noise_prompt_seeds=[],
         noise_prompt_weights=[],
-        im_suffix='',
+        img_savedir='default.png',
         noise_0=[],
     ):
-        self.img_savedir = f"results/{prompts.replace(' ','_')}_{im_suffix}.png"
-
+        self.img_savedir = img_savedir
         prompts = [prompt.strip() for prompt in prompts.split("|")]
 
         self.target_affect = self.process_epa(v, prompts)
