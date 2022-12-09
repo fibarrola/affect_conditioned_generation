@@ -17,7 +17,7 @@ PROMPTS = [
     'A windy night',
     'flaming landscape',
 ]
-MAX_ITER = 1500
+MAX_ITER = 1300
 N_TRIALS = 3
 vv = {
     'high_E': [1.0, 0.5, 0.5],
@@ -38,7 +38,7 @@ for trial in range(N_TRIALS):
     for prompt in PROMPTS:
         seed_everything(trial)
 
-        img0_path = f"results/vqgan_split/{trial}_{prompt.replace(' ','_')}_img0.png"
+        img0_path = f"results/vqgan_split2/{trial}_{prompt.replace(' ','_')}_img0.png"
 
         # Build starting image
         affective_generator.initialize(
@@ -51,7 +51,7 @@ for trial in range(N_TRIALS):
         with tqdm() as pbar:
             while True:
                 affective_generator.train(i)
-                if i == MAX_ITER//2:
+                if i == 50:
                     break
                 i += 1
                 pbar.update()
@@ -62,7 +62,7 @@ for trial in range(N_TRIALS):
                 prompts=prompt,
                 v=vv[v],
                 img_0 = img0_path,
-                img_savedir = f"results/vqgan_split/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir = f"results/vqgan_split2/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 noise_0=noise_0,
             )
@@ -70,7 +70,7 @@ for trial in range(N_TRIALS):
             with tqdm() as pbar:
                 while True:
                     affective_generator.train(i)
-                    if i == MAX_ITER//2:
+                    if i == MAX_ITER:
                         break
                     i += 1
                     pbar.update()
@@ -94,7 +94,7 @@ for trial in range(N_TRIALS):
     for prompt in PROMPTS:
         seed_everything(trial)
 
-        img0_path = f"results/vqgan_split_noned/{trial}_{prompt.replace(' ','_')}_img0.png"
+        img0_path = f"results/vqgan_split_noned2/{trial}_{prompt.replace(' ','_')}_img0.png"
 
         # Build starting image
         affective_generator.initialize(
@@ -107,7 +107,7 @@ for trial in range(N_TRIALS):
         with tqdm() as pbar:
             while True:
                 affective_generator.train(i)
-                if i == MAX_ITER//2:
+                if i == 50:
                     break
                 i += 1
                 pbar.update()
@@ -118,7 +118,7 @@ for trial in range(N_TRIALS):
                 prompts=prompt,
                 v=vv[v],
                 img_0 = img0_path,
-                img_savedir = f"results/vqgan_split_noned/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir = f"results/vqgan_split_noned2/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 noise_0=noise_0,
             )
@@ -126,7 +126,7 @@ for trial in range(N_TRIALS):
             with tqdm() as pbar:
                 while True:
                     affective_generator.train(i)
-                    if i == MAX_ITER//2:
+                    if i == MAX_ITER:
                         break
                     i += 1
                     pbar.update()

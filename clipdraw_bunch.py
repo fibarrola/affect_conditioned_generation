@@ -7,6 +7,7 @@ from pathlib import Path
 import argparse
 from pytorch_lightning import seed_everything
 import os
+from utils import checked_path
 
 
 parser = argparse.ArgumentParser(description='Sketching Agent Args')
@@ -105,12 +106,10 @@ for prompt in PROMPTS:
                 )
             cicada.run_epoch(t)
 
-        k = 0
-        while os.path.exists(f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png"):
-            k += 1
+        filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{v}_0", "png"):
 
         pydiffvg.imwrite(
-            cicada.img, f"{save_path}{prompt.replace(' ','_')}_{v}_{k}.png", gamma=1,
+            cicada.img, filepath, gamma=1,
         )
 
         time_sec = round(time.time() - t0)
