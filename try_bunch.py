@@ -18,6 +18,7 @@ PROMPTS = [
     'flaming landscape',
 ]
 MAX_ITER = 1300
+AFF_WEIGHT = 5
 N_TRIALS = 3
 vv = {
     'high_E': [1.0, 0.5, 0.5],
@@ -38,7 +39,7 @@ for trial in range(N_TRIALS):
     for prompt in PROMPTS:
         seed_everything(trial)
 
-        img0_path = f"results/vqgan_split2/{trial}_{prompt.replace(' ','_')}_img0.png"
+        img0_path = f"results/vqgan_split3/{trial}_{prompt.replace(' ','_')}_img0.png"
 
         # Build starting image
         affective_generator.initialize(
@@ -62,14 +63,14 @@ for trial in range(N_TRIALS):
                 prompts=prompt,
                 v=vv[v],
                 img_0 = img0_path,
-                img_savedir = f"results/vqgan_split2/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir = f"results/vqgan_split3/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 noise_0=noise_0,
             )
             i = 0
             with tqdm() as pbar:
                 while True:
-                    affective_generator.train(i)
+                    affective_generator.train(i,AFF_WEIGHT)
                     if i == MAX_ITER:
                         break
                     i += 1
@@ -125,7 +126,7 @@ for trial in range(N_TRIALS):
             i = 0
             with tqdm() as pbar:
                 while True:
-                    affective_generator.train(i)
+                    affective_generator.train(i,AFF_WEIGHT)
                     if i == MAX_ITER:
                         break
                     i += 1

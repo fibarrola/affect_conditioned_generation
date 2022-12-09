@@ -165,7 +165,7 @@ class AffectiveGenerator:
         add_stegano_data(self.img_savedir)
         add_xmp_data(self.img_savedir)
 
-    def ascend_txt(self, init_weight=0):
+    def ascend_txt(self, init_weight=0, aff_weight=1):
         global i
         out = self.synth(self.z)
         iii = self.clip_model.encode_image(
@@ -181,13 +181,13 @@ class AffectiveGenerator:
             result.append(prompt(iii))
 
         if len(self.target_affect) > 0:
-            result.append(F.mse_loss(self.mlp(iii), self.target_affect))
+            result.append(aff_weight*F.mse_loss(self.mlp(iii), self.target_affect))
 
         return result
 
-    def train(self, iter=0):
+    def train(self, iter=0, aff_weight=1):
         self.opt.zero_grad()
-        lossAll = self.ascend_txt()
+        lossAll = self.ascend_txt(aff_weight)
         if iter % 50 == 0:
             self.checkin(iter, lossAll)
         loss = sum(lossAll)
