@@ -17,8 +17,8 @@ PROMPTS = [
     'A windy night',
     'flaming landscape',
 ]
-MAX_ITER = 1300
-AFF_WEIGHT = 5
+MAX_ITER = 1500
+AFF_WEIGHT = 1
 N_TRIALS = 3
 vv = {
     'high_E': [1.0, 0.5, 0.5],
@@ -52,7 +52,7 @@ for trial in range(N_TRIALS):
         with tqdm() as pbar:
             while True:
                 affective_generator.train(i)
-                if i == 50:
+                if i == 25:
                     break
                 i += 1
                 pbar.update()
@@ -108,7 +108,7 @@ for trial in range(N_TRIALS):
         with tqdm() as pbar:
             while True:
                 affective_generator.train(i)
-                if i == 50:
+                if i == 25:
                     break
                 i += 1
                 pbar.update()
