@@ -3,6 +3,7 @@ import PIL.Image
 import requests
 import numpy as np
 import io
+import os
 
 
 def N_max_elements(xx, N):
@@ -65,3 +66,20 @@ def square_crop(img):
     elif h < w:
         img = img[:, j0 : j0 + h, :]
     return img
+
+
+def checked_path(filepath, extension):
+    '''
+    Check if filepath.extension already exists, and if so, change it
+    '''
+    try:
+        k=int(filepath[-1])
+    except ValueError:
+        print("filepath string should end in a digit")
+    
+    extension = extension.replace('.','')
+
+    while os.path.exists(f"{filepath}{k}.{extension}"):
+        k += 1
+    
+    return f"{filepath}{k}.{extension}"
