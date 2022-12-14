@@ -7,10 +7,15 @@ from src.mlp import MLP
 W = 0.5
 MAX_ITER = 8000
 LR = 0.1
+# PROMPTS = [
+#     'A dog in the forest',
+#     'A wizard transforming reality',
+#     'An old building'
+# ]
 PROMPTS = [
-    'A dog in the forest',
-    'A wizard transforming reality',
-    'An old building'
+    'A fish swimming in the sea',
+    'A tree on a hilltop',
+    'A meal on a white plate'
 ]
 Vs = {
     'high_E': [1.0, 0.5, 0.5],
