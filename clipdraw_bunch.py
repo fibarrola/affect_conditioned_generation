@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse
 from pytorch_lightning import seed_everything
 import os
-from utils import checked_path
+from src.utils import checked_path
 
 
 parser = argparse.ArgumentParser(description='Sketching Agent Args')
@@ -25,7 +25,7 @@ parser.add_argument(
 )
 parser.add_argument("--canvas_h", type=int, help="canvas height", default=224)
 parser.add_argument("--canvas_w", type=int, help="canvas width", default=224)
-parser.add_argument("--max_width", type=int, help="max px width", default=20)
+parser.add_argument("--max_width", type=int, help="max px width", default=15)
 
 # Algorithm parameters
 parser.add_argument(
@@ -42,7 +42,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw2"
 )
 
 args = parser.parse_args()
@@ -60,9 +60,9 @@ save_path = str(save_path) + '/'
 t0 = time.time()
 
 PROMPTS = [
+    'Waves hitting the rocks',
     'The sea at nightfall',
     'A dark forest',
-    'A strange animal',
     'A windy night',
     'flaming landscape',
 ]
@@ -106,7 +106,7 @@ for prompt in PROMPTS:
                 )
             cicada.run_epoch(t)
 
-        filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{v}_0", "png"):
+        filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{v}_0", "png")
 
         pydiffvg.imwrite(
             cicada.img, filepath, gamma=1,
