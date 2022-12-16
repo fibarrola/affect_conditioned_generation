@@ -174,14 +174,14 @@ class AffectiveGenerator:
 
         result = []
 
-        if init_weight:
-            result.append(F.mse_loss(self.z, self.z_orig) * init_weight / 2)
+        # if init_weight:
+        #     result.append(F.mse_loss(self.z, self.z_orig) * init_weight / 2)
 
         for prompt in self.pMs:
             result.append(prompt(iii))
 
-        if len(self.target_affect) > 0:
-            result.append(aff_weight*F.mse_loss(self.mlp(iii), self.target_affect))
+        # if len(self.target_affect) >= 1:
+        #     result.append(aff_weight*F.mse_loss(self.mlp(iii), self.target_affect))
 
         return result
 
