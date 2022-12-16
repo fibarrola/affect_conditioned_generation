@@ -25,7 +25,7 @@ parser.add_argument(
 )
 parser.add_argument("--canvas_h", type=int, help="canvas height", default=224)
 parser.add_argument("--canvas_w", type=int, help="canvas width", default=224)
-parser.add_argument("--max_width", type=int, help="max px width", default=15)
+parser.add_argument("--max_width", type=int, help="max px width", default=10)
 
 # Algorithm parameters
 parser.add_argument(
@@ -42,7 +42,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw2"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw3"
 )
 
 args = parser.parse_args()
@@ -67,6 +67,7 @@ PROMPTS = [
     'flaming landscape',
 ]
 vv = {
+    'no_aff': [None, None, None],
     'high_E': [1.0, 0.5, 0.5],
     'low_E': [0.0, 0.5, 0.5],
     'high_P': [0.5, 1.0, 0.5],

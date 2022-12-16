@@ -32,10 +32,13 @@ class CLIPAffDraw:
     def process_text(
         self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5]
     ):
-        self.target_affect = torch.matmul(
-            torch.ones((self.num_augs, 1), device=self.device),
-            torch.tensor([v], device=self.device, requires_grad=False),
-        )
+        self.use_aff = False if v[0] is None and v[1] is None and v[2] is None else True
+        print("Use affect scores: ", self.use_aff)
+        if self.use_aff:
+            self.target_affect = torch.matmul(
+                torch.ones((self.num_augs, 1), device=self.device),
+                torch.tensor([v], device=self.device, requires_grad=False),
+            )
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)
@@ -125,11 +128,16 @@ class CLIPAffDraw:
                     )
                     * 0.3
                 )
-        loss_aff = F.mse_loss(
-            self.mlp(img_features.to(torch.float32)), self.target_affect
-        )
-
+        if self.use_aff:
+            loss_aff = F.mse_loss(
+                self.mlp(img_features.to(torch.float32)), self.target_affect
+            )
+        else:
+            loss_aff = torch.tensor([0], device=self.device)
+        
+        
         loss = loss_sem + 5 * loss_aff
+        
 
         # Backpropagate the gradients.
         loss.backward()
