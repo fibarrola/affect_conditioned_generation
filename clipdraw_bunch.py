@@ -25,11 +25,11 @@ parser.add_argument(
 )
 parser.add_argument("--canvas_h", type=int, help="canvas height", default=224)
 parser.add_argument("--canvas_w", type=int, help="canvas width", default=224)
-parser.add_argument("--max_width", type=int, help="max px width", default=10)
+parser.add_argument("--max_width", type=int, help="max px width", default=5)
 
 # Algorithm parameters
 parser.add_argument(
-    "--num_iter", type=int, help="maximum algorithm iterations", default=1500
+    "--num_iter", type=int, help="maximum algorithm iterations", default=2000
 )
 parser.add_argument(
     "--num_trials", type=int, help="number of times to run the algorithm", default=1
@@ -42,7 +42,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw3"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw5"
 )
 
 args = parser.parse_args()
@@ -80,7 +80,7 @@ for prompt in PROMPTS:
     for v in vv:
         seed_everything(1)
 
-        cicada = CLIPAffDraw()
+        cicada = CLIPAffDraw(aff_weight=1)
         cicada.process_text(
             prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=vv[v],
         )
