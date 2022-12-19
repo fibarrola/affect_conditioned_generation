@@ -14,7 +14,7 @@ pydiffvg.set_device(torch.device('cuda:0') if torch.cuda.is_available() else 'cp
 
 
 class CLIPAffDraw:
-    def __init__(self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4):
+    def __init__(self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4, aff_weight=1):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.model, preprocess = clip.load('ViT-B/32', self.device, jit=False)
         self.canvas_w = canvas_w
@@ -27,6 +27,7 @@ class CLIPAffDraw:
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
         with open('data/data_handler_mixed.pkl', 'rb') as f:
             self.data_handler = pickle.load(f)
+        self.aff_weight = aff_weight
 
     @torch.no_grad()
     def process_text(
@@ -76,9 +77,9 @@ class CLIPAffDraw:
         self.render = pydiffvg.RenderFunction.apply
 
     def initialize_optimizer(self):
-        self.points_optim = torch.optim.Adam(self.points_vars, lr=0.2)
-        self.width_optim = torch.optim.Adam(self.stroke_width_vars, lr=0.2)
-        self.color_optim = torch.optim.Adam(self.color_vars, lr=0.02)
+        self.points_optim = torch.optim.Adam(self.points_vars, lr=0.1)
+        self.width_optim = torch.optim.Adam(self.stroke_width_vars, lr=0.1)
+        self.color_optim = torch.optim.Adam(self.color_vars, lr=0.01)
 
     def build_img(self, t, shapes=None, shape_groups=None):
         if not shapes:
@@ -136,7 +137,7 @@ class CLIPAffDraw:
             loss_aff = torch.tensor([0], device=self.device)
         
         
-        loss = loss_sem + 5 * loss_aff
+        loss = loss_sem + self.aff_weight * loss_aff
         
 
         # Backpropagate the gradients.
