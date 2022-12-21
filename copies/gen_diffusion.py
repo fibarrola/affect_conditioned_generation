@@ -15,12 +15,12 @@ PROMPTS = [
     'A meal on a white plate'
 ]
 Vs = {
-    'high_E': [0, 1.],
-    'low_E': [0, 0.],
-    'high_P': [1, 1.],
-    'low_P': [1, 0.],
-    'high_A': [2, 1.],
-    'low_A': [2, 0.],
+    'high_E': [1.0, 0.5, 0.5],
+    'low_E': [0.0, 0.5, 0.5],
+    'high_P': [0.5, 1.0, 0.5],
+    'low_P': [0.5, 0.0, 0.5],
+    'high_A': [0.5, 0.5, 1.0],
+    'low_A': [0.5, 0.5, 0.0],
 }
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -37,8 +37,7 @@ for prompt in PROMPTS:
     z_0.requires_grad = False
     for v_name in Vs:
         print(f"----- {v_name} -----")
-        v = torch.tensor([Vs[v_name][1]], device=device)
-        v_idx = Vs[v_name][0]
+        v = torch.tensor([Vs[v_name]], device=device)
         zz = torch.zeros_like(z_0)
         for channel in range(77):
             print(f"----- Adjusting Channel {channel} -----")
@@ -57,7 +56,7 @@ for prompt in PROMPTS:
                 
                 loss = 0
                 loss += W*criterion(z, z_0[:,channel,:])
-                loss += criterion(mlp(z)[:,v_idx], v)
+                loss += 0.2*criterion(mlp(z), v)
                 loss.backward()
                 opt.step()
 

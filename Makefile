@@ -14,3 +14,8 @@ test:
 inspection_test:
 	python3 trials/trace_fixing_test.py
 	python3 trials/prompt_change_test.py
+
+setup_taming_transformers:
+	cd taming-transformers/
+	python3 setup.py install
+	cd ..
