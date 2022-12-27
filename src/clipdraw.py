@@ -31,9 +31,16 @@ class CLIPAffDraw:
 
     @torch.no_grad()
     def process_text(
-        self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5]
+        self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5], aff_idx=None
     ):
-        self.use_aff = False if v[0] is None and v[1] is None and v[2] is None else True
+        if len(v) == 1:
+            if v[0] is None:
+                self.use_aff = False
+            else:
+                self.use_aff = True
+            self.aff_idx = aff_idx
+        else:
+            self.use_aff = False if v[0] is None and v[1] is None and v[2] is None else True
         print("Use affect scores: ", self.use_aff)
         if self.use_aff:
             self.target_affect = torch.matmul(
@@ -130,9 +137,14 @@ class CLIPAffDraw:
                     * 0.3
                 )
         if self.use_aff:
-            loss_aff = F.mse_loss(
-                self.mlp(img_features.to(torch.float32)), self.target_affect
-            )
+            if not self.aff_idx:
+                loss_aff = F.mse_loss(
+                    self.mlp(img_features.to(torch.float32)), self.target_affect
+                )
+            else:
+                loss_aff = F.mse_loss(
+                    self.mlp(img_features.to(torch.float32))[:,self.aff_idx], self.target_affect
+                )
         else:
             loss_aff = torch.tensor([0], device=self.device)
         
