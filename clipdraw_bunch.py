@@ -42,7 +42,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw5"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw9"
 )
 
 args = parser.parse_args()
@@ -60,29 +60,41 @@ save_path = str(save_path) + '/'
 t0 = time.time()
 
 PROMPTS = [
-    'Waves hitting the rocks',
-    'The sea at nightfall',
-    'A dark forest',
-    'A windy night',
-    'flaming landscape',
+    'A volcano',
+    'A large rainforest',
+    'butterflys',
+    'Going downriver',
+    'A remote island',
+    'A treasure map',
+    'An old temple',
 ]
-vv = {
-    'no_aff': [None, None, None],
-    'high_E': [1.0, 0.5, 0.5],
-    'low_E': [0.0, 0.5, 0.5],
-    'high_P': [0.5, 1.0, 0.5],
-    'low_P': [0.5, 0.0, 0.5],
-    'high_A': [0.5, 0.5, 1.0],
-    'low_A': [0.5, 0.5, 0.0],
+# vv = {
+#     'no_aff': [None, None, None],
+#     'high_E': [1.0, 0.5, 0.5],
+#     'low_E': [0.0, 0.5, 0.5],
+#     'high_P': [0.5, 1.0, 0.5],
+#     'low_P': [0.5, 0.0, 0.5],
+#     'high_A': [0.5, 0.5, 1.0],
+#     'low_A': [0.5, 0.5, 0.0],
+# }
+Vs = {    
+    'high_E': [0, 1.],
+    'low_E': [0, 0.],
+    'high_P': [1, 1.],
+    'low_P': [1, 0.],
+    'high_A': [2, 1.],
+    'low_A': [2, 0.],
+    'no_aff': [-1, None],
 }
 
 for prompt in PROMPTS:
-    for v in vv:
+    for v_name in Vs:
         seed_everything(1)
 
-        cicada = CLIPAffDraw(aff_weight=1)
+        cicada = CLIPAffDraw(aff_weight=5)
         cicada.process_text(
-            prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=vv[v],
+            prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=[Vs[v_name][1]],
+            aff_idx = Vs[v_name][0]
         )
 
         time_str = (datetime.datetime.today() + datetime.timedelta(hours=11)).strftime(
@@ -107,7 +119,7 @@ for prompt in PROMPTS:
                 )
             cicada.run_epoch(t)
 
-        filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{v}_0", "png")
+        filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{v_name}_0", "png")
 
         pydiffvg.imwrite(
             cicada.img, filepath, gamma=1,
