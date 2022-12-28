@@ -65,6 +65,7 @@ class AffectiveGenerator:
         if v[0] is None or v[1] is None or v[2] is None:
             tokens = clip.tokenize(prompts).to(device)
             z = self.clip_model.encode_text(tokens).to(torch.float32)
+            ################## scaling???
             v0 = self.mlp(z)
             for k in range(3):
                 if not (v[k]):
