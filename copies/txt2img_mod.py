@@ -101,8 +101,6 @@ class StableDiffuser:
             config = "stable_diffusion/configs/stable-diffusion/v1-inference.yaml",
             ckpt = "stable_diffusion/models/ldm/stable-diffusion-v1/model.ckpt",
             outdir = "stable_diffusion/outputs/txt2img-samples",
-            n_samples = 3,
-            n_rows = 2,
         ):
         config = OmegaConf.load(f"{config}")
         model = load_model_from_config(config, f"{ckpt}")
@@ -118,69 +116,68 @@ class StableDiffuser:
         self.wm_encoder = WatermarkEncoder()
         self.wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
 
-        self.n_samples = n_samples
-        self.batch_size = n_samples
-        n_rows = n_rows if n_rows > 0 else batch_size
-
-    def set_prompt(self, prompt):
+    @torch.no_grad()
+    def initialize(self, prompt, start_code=None, precision="autocast", C=4, W=512, H=512, f=8, n_samples=3):
         assert prompt is not None
-        self.data = [self.batch_size * [prompt]]
-        self.sample_path = os.path.join(self.outpath, prompt.replace(' ','_'))
-        os.makedirs(self.sample_path, exist_ok=True)
-        self.base_count = len(os.listdir(self.sample_path))
-        grid_count = len(os.listdir(self.outpath)) - 1
-
-    def initialize(self, start_code=None, precision="autocast", C=4, W=512, H=512, f=8):
         self.C = C
         self.f = f
         self.W = W
         self.H = H
-        if not start_code:
+        if start_code is None:
             self.start_code = torch.randn([self.n_samples, self.C, self.H // self.f, self.W // self.f], device=device)
+            self.n_samples = n_samples
+            self.batch_size = n_samples
         #     start_code = torch.randn([1, opt.C, opt.H // opt.f, opt.W // opt.f], device=device)
-        #     start_code = torch.cat([start_code for k in range(opt.n_samples)], dim=0) 
-
+        #     start_code = torch.cat([start_code for k in range(opt.n_samples)], dim=0)
+        else:
+            self.start_code = start_code.to(device)
+            self.n_samples = start_code.shape[0]
+            self.batch_size = start_code.shape[0]
+        
+        self.data = [self.batch_size * [prompt]]
+        self.sample_path = os.path.join(self.outpath, prompt.replace(' ','_'))
+        os.makedirs(self.sample_path, exist_ok=True)
+        self.base_count = len(os.listdir(self.sample_path))
         self.precision_scope = autocast if precision=="autocast" else nullcontext
 
     @torch.no_grad()
-    def run_diffusion(self, n_iter=2, scale=7.5, ddim_steps=50, ddim_eta=0.):
+    def run_diffusion(self, scale=7.5, ddim_steps=50, ddim_eta=0.):
         with self.precision_scope('cuda'):
             with self.model.ema_scope():
                 tic = time.time()
                 all_samples = list()
-                for n in trange(n_iter, desc="Sampling"):
-                    for prompts in tqdm(self.data, desc="data"):
-                        uc = None
-                        if scale != 1.0:
-                            uc = self.model.get_learned_conditioning(self.batch_size * [""])
-                        if isinstance(prompts, tuple):
-                            prompts = list(prompts)
-                        c = self.model.get_learned_conditioning(prompts)
-                        shape = [self.C, self.H // self.f, self.W // self.f]
-                        samples_ddim, _ = self.sampler.sample(S=ddim_steps,
-                                                         conditioning=c,
-                                                         batch_size=self.n_samples,
-                                                         shape=shape,
-                                                         verbose=False,
-                                                         unconditional_guidance_scale=scale,
-                                                         unconditional_conditioning=uc,
-                                                         eta=ddim_eta,
-                                                         x_T=self.start_code)
+                for prompts in tqdm(self.data, desc="data"):
+                    uc = None
+                    if scale != 1.0:
+                        uc = self.model.get_learned_conditioning(self.batch_size * [""])
+                    if isinstance(prompts, tuple):
+                        prompts = list(prompts)
+                    c = self.model.get_learned_conditioning(prompts)
+                    shape = [self.C, self.H // self.f, self.W // self.f]
+                    samples_ddim, _ = self.sampler.sample(S=ddim_steps,
+                                                        conditioning=c,
+                                                        batch_size=self.n_samples,
+                                                        shape=shape,
+                                                        verbose=False,
+                                                        unconditional_guidance_scale=scale,
+                                                        unconditional_conditioning=uc,
+                                                        eta=ddim_eta,
+                                                        x_T=self.start_code)
 
-                        x_samples_ddim = self.model.decode_first_stage(samples_ddim)
-                        x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-                        x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
+                    x_samples_ddim = self.model.decode_first_stage(samples_ddim)
+                    x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+                    x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
 
-                        x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+                    x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
 
-                        x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
+                    x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
 
-                        for x_sample in x_checked_image_torch:
-                            x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
-                            img = Image.fromarray(x_sample.astype(np.uint8))
-                            img = put_watermark(img, self.wm_encoder)
-                            img.save(os.path.join(self.sample_path, f"{self.base_count:05}.png"))
-                            self.base_count += 1
+                    for x_sample in x_checked_image_torch:
+                        x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
+                        img = Image.fromarray(x_sample.astype(np.uint8))
+                        img = put_watermark(img, self.wm_encoder)
+                        img.save(os.path.join(self.sample_path, f"{self.base_count:05}.png"))
+                        self.base_count += 1
 
                 toc = time.time()
 
