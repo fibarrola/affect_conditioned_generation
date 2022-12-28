@@ -10,11 +10,18 @@ from src.mlp import MLP
 from src.utils import N_max_elements
 
 from stable_diffusion.scripts.txt2img_mod import StableDiffuser
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+NUM_IMGS = 100
+BATCH_SIZE = 6
 
 stable_diffuser = StableDiffuser()
-stable_diffuser.set_prompt("A cat in the forest")
-stable_diffuser.initialize()
-stable_diffuser.run_diffusion()
+start_code = torch.randn([NUM_IMGS, 4, 512 // 8, 512 // 8], device='cpu')
+num_imgs = 0
+while num_imgs<NUM_IMGS:
+    stable_diffuser.initialize(prompt="A dog in the forest", start_code=start_code[num_imgs:min(num_imgs+BATCH_SIZE, NUM_IMGS),:,:,:])
+    stable_diffuser.run_diffusion()
+    num_imgs += BATCH_SIZE
 
 # assert False
 # device = "cuda:0" if torch.cuda.is_available() else "cpu"
