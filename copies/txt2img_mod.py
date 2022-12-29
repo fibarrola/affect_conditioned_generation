@@ -141,7 +141,7 @@ class StableDiffuser:
         self.precision_scope = autocast if precision=="autocast" else nullcontext
 
     @torch.no_grad()
-    def run_diffusion(self, scale=7.5, ddim_steps=50, ddim_eta=0.):
+    def run_diffusion(self, scale=7.5, ddim_steps=50, ddim_eta=0., save=True, suffix=''):
         with self.precision_scope('cuda'):
             with self.model.ema_scope():
                 tic = time.time()
@@ -166,18 +166,19 @@ class StableDiffuser:
 
                     x_samples_ddim = self.model.decode_first_stage(samples_ddim)
                     x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
-                    x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
+                    self.img_batch = x_samples_ddim
 
-                    x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
-
-                    x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
-
-                    for x_sample in x_checked_image_torch:
-                        x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
-                        img = Image.fromarray(x_sample.astype(np.uint8))
-                        img = put_watermark(img, self.wm_encoder)
-                        img.save(os.path.join(self.sample_path, f"{self.base_count:05}.png"))
-                        self.base_count += 1
+                    if save:
+                        x_samples_ddim = x_samples_ddim.cpu().permute(0, 2, 3, 1).numpy()
+                        x_checked_image = x_samples_ddim
+                        # x_checked_image, has_nsfw_concept = check_safety(x_samples_ddim)
+                        x_checked_image_torch = torch.from_numpy(x_checked_image).permute(0, 3, 1, 2)
+                        for x_sample in x_checked_image_torch:
+                            x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
+                            img = Image.fromarray(x_sample.astype(np.uint8))
+                            img = put_watermark(img, self.wm_encoder)
+                            img.save(os.path.join(self.sample_path, f"{self.base_count:05}.png"))
+                            self.base_count += 1
 
                 toc = time.time()
 
