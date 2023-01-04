@@ -13,12 +13,12 @@ import cv2
 from torchvision.transforms import Resize
 from src.utils import N_max_elements
 
-from stable_diffusion.scripts.txt2img_mod import StableDiffuser
+from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 NUM_IMGS = 12
 BATCH_SIZE = 6
-MAX_ITER = 20
+MAX_ITER = 5
 
 resize = Resize(size=224)
 clip_model = clip.load('ViT-B/32', jit=False)[0].eval().requires_grad_(False).to(device)
@@ -67,12 +67,12 @@ with torch.no_grad():
                 center_low = torch.mean(start_code[tuple(low_inds), :,:,:], dim=0).unsqueeze(0)
                 diff = torch.norm(center_high-center_low)
                 if v_name[0] =='h':
-                    # new_noise = center_high + (0.1*diff/np.sqrt(4*64*64))*torch.randn([6, 4, 512 // 8, 512 // 8], device='cpu')
-                    new_noise = start_code[tuple(high_inds), :,:,:] + 0.1*torch.randn_like(start_code[tuple(high_inds), :,:,:] )
+                    new_noise = center_high + (0.2*diff/np.sqrt(4*64*64))*torch.randn([6, 4, 512 // 8, 512 // 8], device='cpu')
+                    # new_noise = start_code[tuple(high_inds), :,:,:] + 0.1*torch.randn_like(start_code[tuple(high_inds), :,:,:] )
                     start_code[tuple(low_inds), :,:,:] = new_noise
                 else:
-                    # new_noise = center_low + (0.1*diff/np.sqrt(4*64*64))*torch.randn([6, 4, 512 // 8, 512 // 8], device='cpu')
-                    new_noise = start_code[tuple(low_inds), :,:,:] + 0.1*torch.randn_like(start_code[tuple(low_inds), :,:,:] )
+                    new_noise = center_low + (0.2*diff/np.sqrt(4*64*64))*torch.randn([6, 4, 512 // 8, 512 // 8], device='cpu')
+                    # new_noise = start_code[tuple(low_inds), :,:,:] + 0.1*torch.randn_like(start_code[tuple(low_inds), :,:,:] )
                     start_code[tuple(high_inds), :,:,:] = new_noise
 
                 stable_diffuser.initialize(prompt=prompt, start_code=new_noise)
