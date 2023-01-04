@@ -22,14 +22,23 @@ PROMPTS = [
 #     'high_A': [2, 1.],
 #     'low_A': [2, 0.],
 # }
+# Vs = {
+#     'high_E': [1.0, None, None],
+#     'low_E': [0.0, None, None],
+#     'high_P': [None, 1.0, None],
+#     'low_P': [None, 0.0, None],
+#     'high_A': [None, None, 1.0],
+#     'low_A': [None, None, 0.0],
+#     'no_aff': [None, None, None],
+# }
 Vs = {
-    'high_E': [1.0, None, None],
-    'low_E': [0.0, None, None],
-    'high_P': [None, 1.0, None],
-    'low_P': [None, 0.0, None],
-    'high_A': [None, None, 1.0],
-    'low_A': [None, None, 0.0],
-    'no_aff': [None, None, None],
+    'high_E': [1.0, 0.5, 0.5],
+    'low_E': [0.0, 0.5, 0.5],
+    'high_P': [0.5, 1.0, 0.5],
+    'low_P': [0.5, 0.0, 0.5],
+    'high_A': [0.5, 0.5, 1.0],
+    'low_A': [0.5, 0.5, 0.0],
+    'no_aff': [0.5, 0.5, 0.5],
 }
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -71,7 +80,7 @@ for prompt in PROMPTS:
                 
                 loss = 0
                 loss += W*criterion(z, z_0[:,channel,:])
-                loss += criterion(mlp(z), v)
+                loss += criterion(mlp(data_handler.scaler_Z.scale(z)), v)
                 loss.backward()
                 opt.step()
 
@@ -79,9 +88,9 @@ for prompt in PROMPTS:
                 zz[0,channel,:] = copy.deepcopy(z.detach())
 
         zz = zz.to('cpu')
-        with open(f"data/diff_embeddings/{prompt.replace(' ','_')}_{v_name}_W2.pkl", 'wb') as f:
+        with open(f"data/diff_embeddings/{prompt.replace(' ','_')}_{v_name}_010.pkl", 'wb') as f:
             pickle.dump(zz, f)
 
     z_0 = z_0.to('cpu')
-    with open(f"data/{prompt.replace(' ', '_')}_z0_W2.pkl", 'wb') as f:
+    with open(f"data/{prompt.replace(' ', '_')}_z0_010.pkl", 'wb') as f:
         pickle.dump(z_0, f)
