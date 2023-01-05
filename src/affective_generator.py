@@ -65,6 +65,7 @@ class AffectiveGenerator:
         if v[0] is None or v[1] is None or v[2] is None:
             tokens = clip.tokenize(prompts).to(device)
             z = self.clip_model.encode_text(tokens).to(torch.float32)
+            z = self.data_handler.scaler_Z.scale(z)
             v0 = self.mlp(z)
             for k in range(3):
                 if not (v[k]):
@@ -180,8 +181,9 @@ class AffectiveGenerator:
         for prompt in self.pMs:
             result.append(prompt(iii))
 
-        # if len(self.target_affect) >= 1:
-        #     result.append(aff_weight*F.mse_loss(self.mlp(iii), self.target_affect))
+        if len(self.target_affect) >= 1:
+            z = self.data_handler.scaler_Z.scale(iii)
+            result.append(aff_weight*F.mse_loss(self.mlp(z), self.target_affect))
 
         return result
 
