@@ -67,7 +67,8 @@ PROMPTS = [
     'A remote island',
     'A treasure map',
     'An old temple',
-    'A dream'
+    'A dream',
+    'A cloudy day in the field'
 ]
 # vv = {
 #     'no_aff': [None, None, None],
@@ -88,7 +89,6 @@ Vs = {
     'no_aff': [-1, None],
 }
 N_TRIALS = 3
-
 for trial in range(N_TRIALS):
     for aff_weight in [0.1, 1]:
         for prompt in PROMPTS:
