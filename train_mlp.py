@@ -90,20 +90,22 @@ for epoch in range(config.num_epochs):
         mlp.eval()  # prep model for evaluation
         for data, label, sds in data_handler.txt_test_loader:
             output = mlp(data)
+            l1_loss_txt += torch.sum(torch.abs(output - label)).item()
             label = data_handler.scaler_V.unscale(label)
             output = data_handler.scaler_V.unscale(output)
             loss = criterion(output, label)
             valid_loss += loss.item() * data.size(0)
-            l1_loss_txt += torch.sum(torch.abs(output - label) / 8.6).item()
+            # l1_loss_txt += torch.sum(torch.abs(output - label) / 8.6).item()
             r_txt += threshold_count(output, label, sds) * data.size(0)
 
         for data, label, sds in data_handler.img_test_loader:
             output = mlp(data)
+            l1_loss_img += torch.sum(torch.abs(output - label)).item()
             label = data_handler.scaler_V.unscale(label)
             output = data_handler.scaler_V.unscale(output)
             loss = criterion(output, label)
             valid_loss += loss.item() * data.size(0)
-            l1_loss_img += torch.sum(torch.abs(output - label) / 8.6).item()
+            # l1_loss_img += torch.sum(torch.abs(output - label) / 8.6).item()
             r_img += threshold_count(output, label, sds) * data.size(0)
 
         train_loss = train_loss / (

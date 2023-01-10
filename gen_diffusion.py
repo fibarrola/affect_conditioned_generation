@@ -4,7 +4,7 @@ import copy
 from src.mlp import MLP
 
 
-W = 1
+W = 0.3
 MAX_ITER = 5000
 LR = 0.1
 PROMPTS = [
@@ -79,8 +79,8 @@ for prompt in PROMPTS:
                 opt.zero_grad()
                 
                 loss = 0
-                loss += W*criterion(z, z_0[:,channel,:])
-                loss += criterion(mlp(data_handler.scaler_Z.scale(z)), v)
+                loss += criterion(z, z_0[:,channel,:])
+                loss += W*criterion(mlp(data_handler.scaler_Z.scale(z)), v)
                 loss.backward()
                 opt.step()
 
@@ -88,9 +88,9 @@ for prompt in PROMPTS:
                 zz[0,channel,:] = copy.deepcopy(z.detach())
 
         zz = zz.to('cpu')
-        with open(f"data/diff_embeddings/{prompt.replace(' ','_')}_{v_name}_010.pkl", 'wb') as f:
+        with open(f"data/diff_embeddings/{prompt.replace(' ','_')}_{v_name}_010_03.pkl", 'wb') as f:
             pickle.dump(zz, f)
 
     z_0 = z_0.to('cpu')
-    with open(f"data/{prompt.replace(' ', '_')}_z0_010.pkl", 'wb') as f:
+    with open(f"data/{prompt.replace(' ', '_')}_z0_010_03.pkl", 'wb') as f:
         pickle.dump(z_0, f)
