@@ -6,7 +6,6 @@ import time
 from pathlib import Path
 import argparse
 from pytorch_lightning import seed_everything
-import os
 from src.utils import checked_path
 
 
@@ -68,7 +67,7 @@ PROMPTS = [
     'A treasure map',
     'An old temple',
     'A dream',
-    'A cloudy day in the field'
+    'A cloudy day in the field',
 ]
 # vv = {
 #     'no_aff': [None, None, None],
@@ -79,13 +78,13 @@ PROMPTS = [
 #     'high_A': [0.5, 0.5, 1.0],
 #     'low_A': [0.5, 0.5, 0.0],
 # }
-Vs = {    
-    'high_E': [0, 1.],
-    'low_E': [0, 0.],
-    'high_P': [1, 1.],
-    'low_P': [1, 0.],
-    'high_A': [2, 1.],
-    'low_A': [2, 0.],
+Vs = {
+    'high_E': [0, 1.0],
+    'low_E': [0, 0.0],
+    'high_P': [1, 1.0],
+    'low_P': [1, 0.0],
+    'high_A': [2, 1.0],
+    'low_A': [2, 0.0],
     'no_aff': [-1, None],
 }
 N_TRIALS = 3
@@ -122,13 +121,11 @@ for trial in range(N_TRIALS):
                             )
                         )
                     cicada.run_epoch(t)
-
                 filepath = checked_path(f"{save_path}w{10*aff_weight}_{prompt.replace(' ','_')}_{trial}_{v_name}_0", "png")
 
                 pydiffvg.imwrite(
                     cicada.img, filepath, gamma=1,
                 )
-
                 time_sec = round(time.time() - t0)
                 print(
                     f"Elapsed time: {time_sec//60} min, {time_sec-60*(time_sec//60)} seconds."

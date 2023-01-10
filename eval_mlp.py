@@ -96,7 +96,10 @@ r_img = r_img / len(data_handler.img_test_loader.sampler)
 
 print(
     'txt Loss: {:.3f}, \timg Loss: {:.3f} \ttxt r: {:.4f}, \timg r: {:.4f}'.format(
-        l1_loss_txt, l1_loss_img, 1 - r_txt, 1 - r_img,
+        l1_loss_txt,
+        l1_loss_img,
+        1 - r_txt,
+        1 - r_img,
     )
 )
 print(txt_losses)

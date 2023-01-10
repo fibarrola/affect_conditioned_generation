@@ -14,7 +14,9 @@ pydiffvg.set_device(torch.device('cuda:0') if torch.cuda.is_available() else 'cp
 
 
 class CLIPAffDraw:
-    def __init__(self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4, aff_weight=1):
+    def __init__(
+        self, canvas_w=224, canvas_h=224, normalize_clip=True, num_augs=4, aff_weight=1
+    ):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.model, preprocess = clip.load('ViT-B/32', self.device, jit=False)
         self.canvas_w = canvas_w
@@ -31,7 +33,12 @@ class CLIPAffDraw:
 
     @torch.no_grad()
     def process_text(
-        self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5], aff_idx=None
+        self,
+        prompt,
+        neg_prompt_1=None,
+        neg_prompt_2=None,
+        v=[0.5, 0.5, 0.5],
+        aff_idx=None,
     ):
         if len(v) == 1:
             if v[0] is None:
@@ -40,7 +47,9 @@ class CLIPAffDraw:
                 self.use_aff = True
             self.aff_idx = aff_idx
         else:
-            self.use_aff = False if v[0] is None and v[1] is None and v[2] is None else True
+            self.use_aff = (
+                False if v[0] is None and v[1] is None and v[2] is None else True
+            )
         print("Use affect scores: ", self.use_aff)
         if self.use_aff:
             self.target_affect = torch.matmul(
@@ -64,7 +73,9 @@ class CLIPAffDraw:
             num_rnd_traces: Int;
         '''
         shapes, shape_groups = treebranch_initialization(
-            self.drawing, num_rnd_traces, self.drawing_area,
+            self.drawing,
+            num_rnd_traces,
+            self.drawing_area,
         )
         self.drawing.add_shapes(shapes, shape_groups, fixed=False)
 
@@ -143,14 +154,13 @@ class CLIPAffDraw:
                 )
             else:
                 loss_aff = F.mse_loss(
-                    self.mlp(img_features.to(torch.float32))[:,self.aff_idx], self.target_affect
+                    self.mlp(img_features.to(torch.float32))[:, self.aff_idx],
+                    self.target_affect,
                 )
         else:
             loss_aff = torch.tensor([0], device=self.device)
-        
-        
+
         loss = loss_sem + self.aff_weight * loss_aff
-        
 
         # Backpropagate the gradients.
         loss.backward()

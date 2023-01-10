@@ -73,13 +73,13 @@ def checked_path(filepath, extension):
     Check if filepath.extension already exists, and if so, change it
     '''
     try:
-        k=int(filepath[-1])
+        k = int(filepath[-1])
     except ValueError:
         print("filepath string should end in a digit")
-    
-    extension = extension.replace('.','')
+
+    extension = extension.replace('.', '')
 
     while os.path.exists(f"{filepath}{k}.{extension}"):
         k += 1
-    
+
     return f"{filepath}{k}.{extension}"
