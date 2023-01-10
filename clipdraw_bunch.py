@@ -41,7 +41,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw9"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw11"
 )
 
 args = parser.parse_args()
@@ -89,52 +89,44 @@ Vs = {
 }
 N_TRIALS = 3
 for trial in range(N_TRIALS):
-    for prompt in PROMPTS:
-        for v_name in Vs:
-            seed_everything(1)
+    for aff_weight in [0.1, 1]:
+        for prompt in PROMPTS:
+            for v_name in Vs:
+                seed_everything(1)
 
-            cicada = CLIPAffDraw(aff_weight=1)
-            cicada.process_text(
-                prompt=prompt,
-                neg_prompt_1="Written words.",
-                neg_prompt_2="Text",
-                v=[Vs[v_name][1]],
-                aff_idx=Vs[v_name][0],
-            )
+                cicada = CLIPAffDraw(aff_weight=aff_weight)
+                cicada.process_text(
+                    prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=[Vs[v_name][1]],
+                    aff_idx = Vs[v_name][0]
+                )
 
-            time_str = (
-                datetime.datetime.today() + datetime.timedelta(hours=11)
-            ).strftime("%Y_%m_%d_%H_%M_%S")
+                time_str = (datetime.datetime.today() + datetime.timedelta(hours=11)).strftime(
+                    "%Y_%m_%d_%H_%M_%S"
+                )
 
-            cicada.add_random_shapes(args.num_paths)
-            cicada.initialize_variables()
-            cicada.initialize_optimizer()
+                cicada.add_random_shapes(args.num_paths)
+                cicada.initialize_variables()
+                cicada.initialize_optimizer()
 
-            # Run the main optimization loop
-            for t in range(args.num_iter):
+                # Run the main optimization loop
+                for t in range(args.num_iter):
 
-                if (t + 1) % (args.num_iter // 50) == 0:
-                    print(
-                        'Step: {} \t Loss: {:.3f} \t Semantic Loss: {:.3f} \t Affective Loss: {:.3f}'.format(
-                            t + 1,
-                            cicada.losses['global'],
-                            cicada.losses['semantic'],
-                            cicada.losses['affective'],
+                    if (t + 1) % (args.num_iter // 50) == 0:
+                        print(
+                            'Step: {} \t Loss: {:.3f} \t Semantic Loss: {:.3f} \t Affective Loss: {:.3f}'.format(
+                                t + 1,
+                                cicada.losses['global'],
+                                cicada.losses['semantic'],
+                                cicada.losses['affective'],
+                            )
                         )
-                    )
-                cicada.run_epoch(t)
+                    cicada.run_epoch(t)
+                filepath = checked_path(f"{save_path}w{10*aff_weight}_{prompt.replace(' ','_')}_{trial}_{v_name}_0", "png")
 
-            filepath = checked_path(
-                f"{save_path}{prompt.replace(' ','_')}_{trial}_{v_name}_0", "png"
-            )
-
-            pydiffvg.imwrite(
-                cicada.img,
-                filepath,
-                gamma=1,
-            )
-
-            time_sec = round(time.time() - t0)
-            print(
-                f"Elapsed time: {time_sec//60} min, {time_sec-60*(time_sec//60)} seconds."
-            )
+                pydiffvg.imwrite(
+                    cicada.img, filepath, gamma=1,
+                )
+                time_sec = round(time.time() - t0)
+                print(
+                    f"Elapsed time: {time_sec//60} min, {time_sec-60*(time_sec//60)} seconds."
+                )

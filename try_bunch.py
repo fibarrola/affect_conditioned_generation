@@ -16,28 +16,35 @@ PROMPTS = [
     'A dark forest',
     'A windy night',
     'flaming landscape',
+    'A volcano',
+    'A large rainforest',
+    'butterflys',
+    'Going downriver',
+    'A remote island',
+    'A treasure map',
+    'An old temple',
 ]
 MAX_ITER = 1500
-AFF_WEIGHT = 1
-N_TRIALS = 3
-# vv = {
-#     'high_E': [1.0, 0.5, 0.5],
-#     'low_E': [0.0, 0.5, 0.5],
-#     'high_P': [0.5, 1.0, 0.5],
-#     'low_P': [0.5, 0.0, 0.5],
-#     'high_A': [0.5, 0.5, 1.0],
-#     'low_A': [0.5, 0.5, 0.0],
-# }
-vv = {'no_aff': [None, None, None]}
+AFF_WEIGHT = 7
+N_TRIALS = 1
+vv = {
+    'high_E': [1.0, 0.5, 0.5],
+    'low_E': [0.0, 0.5, 0.5],
+    'high_P': [0.5, 1.0, 0.5],
+    'low_P': [0.5, 0.0, 0.5],
+    'high_A': [0.5, 0.5, 1.0],
+    'low_A': [0.5, 0.5, 0.0],
+    'no_aff': [None, None, None],
+}
 
 affective_generator = AffectiveGenerator()
 for trial in range(N_TRIALS):
     # seed_everything(trial)
-    noise_0 = torch.randint(
-        affective_generator.n_toks,
-        [affective_generator.toksY * affective_generator.toksX],
-        device=device,
-    )
+    # noise_0 = torch.randint(
+    #     affective_generator.n_toks,
+    #     [affective_generator.toksY * affective_generator.toksX],
+    #     device=device,
+    # )
     for prompt in PROMPTS:
 
         for v in vv:
@@ -45,7 +52,7 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                img_savedir=f"results/vqgan/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir = f"results/vqgan_scaled_02/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 # noise_0=noise_0,
             )
