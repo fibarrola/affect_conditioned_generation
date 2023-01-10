@@ -10,10 +10,8 @@ class Scaler:
         assert method in ['uniform', 'whiten', 'normalize', 'none']
         self.method = method
         if method == 'uniform':
-            # self.ub, _ = torch.max(X, dim=0)
-            # self.lb, _ = torch.min(X, dim=0)
-            self.ub = 8.6
-            self.lb = 0
+            self.ub, _ = torch.max(X, dim=0)
+            self.lb, _ = torch.min(X, dim=0)
         elif method == 'whiten':
             self.mu = torch.mean(X, dim=0)
             X = X - self.mu

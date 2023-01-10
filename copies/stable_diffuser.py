@@ -145,9 +145,7 @@ class StableDiffuser:
     
     @torch.no_grad()
     def override_zz(self, z):
-        self.zz = torch.cat([z.unsqueeze(0) for k in range(self.zz.shape[0])], dim=0)
-        self.zz.to(device)        
-
+        self.zz = torch.cat([z for k in range(self.zz.shape[0])], dim=0).to(device)
 
     @torch.no_grad()
     def run_diffusion(self, scale=7.5, ddim_steps=50, ddim_eta=0., save=True, suffix=''):
@@ -159,6 +157,7 @@ class StableDiffuser:
                 if scale != 1.0:
                     uc = self.model.get_learned_conditioning(self.batch_size * [""])
                 shape = [self.C, self.H // self.f, self.W // self.f]
+
                 samples_ddim, _ = self.sampler.sample(S=ddim_steps,
                                                     conditioning=self.zz,
                                                     batch_size=self.n_samples,
