@@ -16,13 +16,22 @@ parser.add_argument(
     "--num_iter", type=int, help="maximum algorithm iterations", default=1500
 )
 parser.add_argument(
-    "--E", type=float, help="Evaluation (bad<good) in [0,1]", default=0.5,
+    "--E",
+    type=float,
+    help="Evaluation (bad<good) in [0,1]",
+    default=0.5,
 )
 parser.add_argument(
-    "--P", type=float, help="Potency (weak<strong) in [0,1]", default=0.5,
+    "--P",
+    type=float,
+    help="Potency (weak<strong) in [0,1]",
+    default=0.5,
 )
 parser.add_argument(
-    "--A", type=float, help="Activity (calm<exciting) in [0,1]", default=0.5,
+    "--A",
+    type=float,
+    help="Activity (calm<exciting) in [0,1]",
+    default=0.5,
 )
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
@@ -66,5 +75,7 @@ k = 0
 while os.path.exists(f"{save_path}{args.prompt.replace(' ','_')}_{k}.png"):
     k += 1
 pydiffvg.imwrite(
-    cicada.img, f"{save_path}{args.prompt.replace(' ','_')}_{k}.png", gamma=1,
+    cicada.img,
+    f"{save_path}{args.prompt.replace(' ','_')}_{k}.png",
+    gamma=1,
 )

@@ -1,18 +1,11 @@
 import torch
-import clip
 import pandas as pd
-import pickle
 from src.scaler import Scaler
 from torch.utils.data import random_split, TensorDataset, DataLoader
-import torch
-import clip
-import pandas as pd
 import numpy as np
-from src.scaler import Scaler
 from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
-from .utils import N_max_elements, get_furthest_apart
-import logging
+
 
 def load_model_from_config(config, ckpt, verbose=False):
     print(f"Loading model from {ckpt}")
@@ -33,13 +26,14 @@ def load_model_from_config(config, ckpt, verbose=False):
     model.eval()
     return model
 
+
 class DataHandlerBERT:
     def __init__(self, csv_path):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.df = pd.read_csv(csv_path).dropna()
         config = OmegaConf.load(
-                    "stable_diffusion/configs/stable-diffusion/v1-inference.yaml"
-                )
+            "stable_diffusion/configs/stable-diffusion/v1-inference.yaml"
+        )
         self.model = load_model_from_config(
             config, "stable_diffusion/models/ldm/stable-diffusion-v1/model.ckpt"
         )
@@ -59,11 +53,11 @@ class DataHandlerBERT:
                 * word_batch_size : min(len(self.words), (m + 1) * word_batch_size)
             ]
             with torch.no_grad():
-                Z_subset = self.model.get_learned_conditioning(words_subset)[:,channel,:]
+                Z_subset = self.model.get_learned_conditioning(words_subset)[:, channel, :]
                 self.Z = torch.cat([self.Z, Z_subset], 0)
                 if len(self.words) <= (m + 1) * word_batch_size:
                     break
-        
+
         dim_names = ['V.Mean.Sum', 'A.Mean.Sum', 'D.Mean.Sum']
         self.V = torch.tensor(
             fil_df[dim_names].values, device=self.device, dtype=torch.float32

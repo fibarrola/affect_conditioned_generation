@@ -6,7 +6,6 @@ import time
 from pathlib import Path
 import argparse
 from pytorch_lightning import seed_everything
-import os
 from src.utils import checked_path
 
 
@@ -68,7 +67,7 @@ PROMPTS = [
     'A treasure map',
     'An old temple',
     'A dream',
-    'A cloudy day in the field'
+    'A cloudy day in the field',
 ]
 # vv = {
 #     'no_aff': [None, None, None],
@@ -79,30 +78,33 @@ PROMPTS = [
 #     'high_A': [0.5, 0.5, 1.0],
 #     'low_A': [0.5, 0.5, 0.0],
 # }
-Vs = {    
-    'high_E': [0, 1.],
-    'low_E': [0, 0.],
-    'high_P': [1, 1.],
-    'low_P': [1, 0.],
-    'high_A': [2, 1.],
-    'low_A': [2, 0.],
+Vs = {
+    'high_E': [0, 1.0],
+    'low_E': [0, 0.0],
+    'high_P': [1, 1.0],
+    'low_P': [1, 0.0],
+    'high_A': [2, 1.0],
+    'low_A': [2, 0.0],
     'no_aff': [-1, None],
 }
 N_TRIALS = 3
-for tiral in range(N_TRIALS):
+for trial in range(N_TRIALS):
     for prompt in PROMPTS:
         for v_name in Vs:
             seed_everything(1)
 
             cicada = CLIPAffDraw(aff_weight=1)
             cicada.process_text(
-                prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=[Vs[v_name][1]],
-                aff_idx = Vs[v_name][0]
+                prompt=prompt,
+                neg_prompt_1="Written words.",
+                neg_prompt_2="Text",
+                v=[Vs[v_name][1]],
+                aff_idx=Vs[v_name][0],
             )
 
-            time_str = (datetime.datetime.today() + datetime.timedelta(hours=11)).strftime(
-                "%Y_%m_%d_%H_%M_%S"
-            )
+            time_str = (
+                datetime.datetime.today() + datetime.timedelta(hours=11)
+            ).strftime("%Y_%m_%d_%H_%M_%S")
 
             cicada.add_random_shapes(args.num_paths)
             cicada.initialize_variables()
@@ -122,10 +124,14 @@ for tiral in range(N_TRIALS):
                     )
                 cicada.run_epoch(t)
 
-            filepath = checked_path(f"{save_path}{prompt.replace(' ','_')}_{trial}_{v_name}_0", "png")
+            filepath = checked_path(
+                f"{save_path}{prompt.replace(' ','_')}_{trial}_{v_name}_0", "png"
+            )
 
             pydiffvg.imwrite(
-                cicada.img, filepath, gamma=1,
+                cicada.img,
+                filepath,
+                gamma=1,
             )
 
             time_sec = round(time.time() - t0)

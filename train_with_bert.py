@@ -3,7 +3,6 @@ from src.data_handler_bert import DataHandlerBERT
 import torch
 import pickle
 import argparse
-from torch.nn.functional import sigmoid
 
 parser = argparse.ArgumentParser(description='Training Parameters')
 parser.add_argument("--num_epochs", type=int, default=2500)
@@ -39,7 +38,9 @@ for channel in range(77):
     with open(f'data/bert_nets/data_handler_bert_{channel}.pkl', 'wb') as f:
         pickle.dump(data_handler, f)
 
-    mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to('cuda:0')
+    mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to(
+        'cuda:0'
+    )
     optimizer = torch.optim.Adam(mlp.parameters(), lr=config.lr)
 
     valid_loss_min = 1e8
@@ -68,7 +69,7 @@ for channel in range(77):
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
                 l1_loss_txt += torch.sum(torch.abs(output - label) / 8.6).item()
-        
+
             train_loss = train_loss / len(data_handler.train_loader.sampler)
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)
             l1_loss_txt = l1_loss_txt / (3 * len(data_handler.test_loader.sampler))
@@ -76,10 +77,7 @@ for channel in range(77):
             if (epoch + 1) % 100 == 0:
                 print(
                     'Epoch: {} \tTrain Loss: {:.3f} \tVal Loss: {:.3f} \ttxt Loss: {:.3f}'.format(
-                        epoch + 1,
-                        train_loss,
-                        valid_loss,
-                        l1_loss_txt
+                        epoch + 1, train_loss, valid_loss, l1_loss_txt
                     )
                 )
 

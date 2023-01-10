@@ -1,21 +1,11 @@
-import pandas as pd
 import torch
-from src.utils import imread, square_crop
 import clip
 import pickle
-import sys
-from os import listdir
-from os.path import isfile, join
 from src.mlp import MLP
-from src.utils import N_max_elements
-import numpy as np
-import cv2
 from torchvision.transforms import Resize
-from src.utils import N_max_elements
-import time
-
-
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
+
+
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 NUM_IMGS = 500
@@ -40,7 +30,7 @@ PROMPTS = [
     "The sea at night",
     "The sea at sunrise",
     "An elephant",
-    "A crocodile"
+    "A crocodile",
 ]
 ## Initialization
 stable_diffuser = StableDiffuser(outdir="results/diff_no_aff")
@@ -48,7 +38,12 @@ with torch.no_grad():
     for prompt in PROMPTS:
         start_code = torch.randn([NUM_IMGS, 4, 512 // 8, 512 // 8], device='cpu')
         num_imgs = 0
-        while num_imgs<NUM_IMGS:
-            stable_diffuser.initialize(prompt=prompt, start_code=start_code[num_imgs:min(num_imgs+BATCH_SIZE, NUM_IMGS),:,:,:])
+        while num_imgs < NUM_IMGS:
+            stable_diffuser.initialize(
+                prompt=prompt,
+                start_code=start_code[
+                    num_imgs : min(num_imgs + BATCH_SIZE, NUM_IMGS), :, :, :
+                ],
+            )
             stable_diffuser.run_diffusion()
             num_imgs += BATCH_SIZE

@@ -4,7 +4,7 @@ from tqdm.notebook import tqdm
 from PIL import ImageFile
 from src.affective_generator import AffectiveGenerator
 import torch
-from pytorch_lightning import seed_everything
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -45,14 +45,14 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                img_savedir = f"results/vqgan/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir=f"results/vqgan/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 # noise_0=noise_0,
             )
             i = 0
             with tqdm() as pbar:
                 while True:
-                    affective_generator.train(i,AFF_WEIGHT)
+                    affective_generator.train(i, AFF_WEIGHT)
                     if i == MAX_ITER:
                         break
                     i += 1
