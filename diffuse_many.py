@@ -23,21 +23,18 @@ with open('data/data_handler_mixed.pkl', 'rb') as f:
     data_handler = pickle.load(f)
 
 PROMPTS = [
-    "A dog in the forest",
-    "A meal on a white plate",
-    "A tree on a hilltop",
-    "A forest",
-    "A dark forest",
-    "A house overlooking the sea",
-    "An old house overlooking the sea",
-    "A colourful wild animal",
-    "A large wild animal",
-    "A spaceship",
-    "An UFO",
-    "The sea at night",
-    "The sea at sunrise",
-    "An elephant",
-    "A crocodile",
+    'A dog in the forest',
+    'A crocodile',
+    'A colourful wild animal',
+    'A dark forest',
+    'A forest',
+    'A house overlooking the sea',
+    'A large wild animal',
+    'A spaceship',
+    'An elephant',
+    'An UFO',
+    'The sea at night',
+    'The sea at sunrise',
 ]
 Vs = {
     'high_E': [1.0, 0.5, 0.5],
@@ -49,13 +46,16 @@ Vs = {
     'no_aff': [],
 }
 ## Initialization
-stable_diffuser = StableDiffuser(outdir=f"results/diff_large_set2/{METHOD}_{int(10*W)}")
+stable_diffuser = StableDiffuser(outdir=f"results/diff_large_set3/{METHOD}_{int(10*W)}")
 with torch.no_grad():
     start_code = torch.randn([NUM_IMGS, 4, 512 // 8, 512 // 8], device='cpu')
     for v_name in Vs:
         for prompt in PROMPTS:
-            os.makedirs(f"results/diff_large_set2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}", exist_ok=True)
-            stable_diffuser.outpath = f"results/diff_large_set2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}"
+            os.makedirs(
+                f"results/diff_large_set3/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}",
+                exist_ok=True,
+            )
+            stable_diffuser.outpath = f"results/diff_large_set3/{METHOD}_{int(10*W)}"
             try:
                 if not v_name == 'no_aff':
                     with open(

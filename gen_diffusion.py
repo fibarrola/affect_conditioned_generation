@@ -5,7 +5,7 @@ import os
 from src.mlp import MLP
 
 
-W = 0.2
+W = 0.3
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
 MAX_ITER = 500
@@ -42,9 +42,6 @@ mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
 mean_error = torch.nn.L1Loss(reduction='mean')
 
-import os
-
-
 for prompt in PROMPTS:
     print(f"----- {prompt} -----")
     z_0 = data_handler.model.get_learned_conditioning([prompt])
@@ -76,21 +73,29 @@ for prompt in PROMPTS:
                     if METHOD == 'full_vec':
                         loss += W * criterion(mlp(data_handler.scaler_Z.scale(z)), v)
                     elif METHOD == 'single_dim':
-                        dim = 0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
-                        loss += W * criterion(mlp(data_handler.scaler_Z.scale(z))[:, dim], v[:, dim])
+                        dim = (
+                            0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
+                        )
+                        loss += W * criterion(
+                            mlp(data_handler.scaler_Z.scale(z))[:, dim], v[:, dim]
+                        )
                     loss.backward()
                     opt.step()
 
             with torch.no_grad():
                 zz[0, channel, :] = copy.deepcopy(z.detach())
-            
+
             # print('dim: ', dim)
             # print('mlp(z0): ', mlp(data_handler.scaler_Z.scale(z_0[:, channel, :])))
             # print('mlp(z)', mlp(data_handler.scaler_Z.scale(z)))
 
         zz = zz.to('cpu')
-        os.makedirs(f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/", exist_ok=True)
+        os.makedirs(
+            f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/",
+            exist_ok=True,
+        )
         with open(
-            f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl", 'wb'
+            f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
+            'wb',
         ) as f:
             pickle.dump(zz, f)

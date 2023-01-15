@@ -1,7 +1,5 @@
 import pickle
 import torch
-import copy
-import os
 from src.mlp import MLP
 
 
@@ -42,26 +40,27 @@ mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
 mean_error = torch.nn.L1Loss(reduction='mean')
 
-import os
-
 
 for prompt in PROMPTS:
     print(f"----- {prompt} -----")
     with torch.no_grad():
         z_0 = data_handler.model.get_learned_conditioning([prompt]).to('cpu')
-        z_1 = data_handler.model.get_learned_conditioning(["A dog in a gloomy forest"]).to('cpu')
+        z_1 = data_handler.model.get_learned_conditioning(
+            ["A dog in a gloomy forest"]
+        ).to('cpu')
         # z_0.requires_grad = False
         for v_name in Vs:
             print(f"----- {v_name} -----")
             with open(
-                f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl", 'rb'
+                f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
+                'rb',
             ) as f:
                 zz = pickle.load(f).to('cpu')
-            
+
             # diff_0 = torch.norm((zz-z_0).squeeze(0), dim=1)
             if v_name == 'low_A' or v_name == 'low_P' or v_name == 'low_E':
-                print(diff_1-torch.norm((zz-z_1).squeeze(0), dim=1))
-            diff_1 = torch.norm((zz-z_1).squeeze(0), dim=1)
+                print(diff_1 - torch.norm((zz - z_1).squeeze(0), dim=1))
+            diff_1 = torch.norm((zz - z_1).squeeze(0), dim=1)
             # for channel in range(77):
             #     print(f"Adjusting Channel {channel} ...")
 
@@ -93,7 +92,7 @@ for prompt in PROMPTS:
 
             #     with torch.no_grad():
             #         zz[0, channel, :] = copy.deepcopy(z.detach())
-                
+
             #     # print('dim: ', dim)
             #     # print('mlp(z0): ', mlp(data_handler.scaler_Z.scale(z_0[:, channel, :])))
             #     # print('mlp(z)', mlp(data_handler.scaler_Z.scale(z)))
