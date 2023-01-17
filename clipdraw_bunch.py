@@ -42,7 +42,7 @@ parser.add_argument(
 )
 # Saving
 parser.add_argument(
-    "--save_path", type=str, help="subfolder for saving results", default="clipdraw11"
+    "--save_path", type=str, help="subfolder for saving results", default="clipdraw13"
 )
 
 args = parser.parse_args()
@@ -69,36 +69,39 @@ PROMPTS = [
     'An old temple',
     'A dream'
 ]
-# vv = {
-#     'no_aff': [None, None, None],
-#     'high_E': [1.0, 0.5, 0.5],
-#     'low_E': [0.0, 0.5, 0.5],
-#     'high_P': [0.5, 1.0, 0.5],
-#     'low_P': [0.5, 0.0, 0.5],
-#     'high_A': [0.5, 0.5, 1.0],
-#     'low_A': [0.5, 0.5, 0.0],
-# }
-Vs = {    
-    'high_E': [0, 1.],
-    'low_E': [0, 0.],
-    'high_P': [1, 1.],
-    'low_P': [1, 0.],
-    'high_A': [2, 1.],
-    'low_A': [2, 0.],
-    'no_aff': [-1, None],
+Vs = {
+    'no_aff': [None, None, None],
+    'high_E': [1.0, 0.5, 0.5],
+    'low_E': [0.0, 0.5, 0.5],
+    'high_P': [0.5, 1.0, 0.5],
+    'low_P': [0.5, 0.0, 0.5],
+    'high_A': [0.5, 0.5, 1.0],
+    'low_A': [0.5, 0.5, 0.0],
 }
+# Vs = {    
+#     'high_E': [0, 1.],
+#     'low_E': [0, 0.],
+#     'high_P': [1, 1.],
+#     'low_P': [1, 0.],
+#     'high_A': [2, 1.],
+#     'low_A': [2, 0.],
+#     'no_aff': [-1, None],
+# }
 N_TRIALS = 3
 
 for trial in range(N_TRIALS):
-    for aff_weight in [0.1, 1]:
+    for aff_weight in [10, 3]:
         for prompt in PROMPTS:
             for v_name in Vs:
                 seed_everything(1)
 
                 cicada = CLIPAffDraw(aff_weight=aff_weight)
+                # cicada.process_text(
+                #     prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=[Vs[v_name][1]],
+                #     aff_idx = Vs[v_name][0]
+                # )
                 cicada.process_text(
-                    prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=[Vs[v_name][1]],
-                    aff_idx = Vs[v_name][0]
+                    prompt=prompt, neg_prompt_1="Written words.", neg_prompt_2="Text", v=Vs[v_name],
                 )
 
                 time_str = (datetime.datetime.today() + datetime.timedelta(hours=11)).strftime(

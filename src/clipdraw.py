@@ -33,20 +33,18 @@ class CLIPAffDraw:
     def process_text(
         self, prompt, neg_prompt_1=None, neg_prompt_2=None, v=[0.5, 0.5, 0.5], aff_idx=None
     ):
-        if len(v) == 1:
-            if v[0] is None:
-                self.use_aff = False
-            else:
-                self.use_aff = True
-            self.aff_idx = aff_idx
+        if aff_idx is None:
+            self.use_aff = False if (v[0] is None and v[1] is None and v[2] is None) else True
         else:
-            self.use_aff = False if v[0] is None and v[1] is None and v[2] is None else True
+            self.use_aff = True
+        self.aff_idx = aff_idx
         print("Use affect scores: ", self.use_aff)
         if self.use_aff:
             self.target_affect = torch.matmul(
                 torch.ones((self.num_augs, 1), device=self.device),
                 torch.tensor([v], device=self.device, requires_grad=False),
             )
+            print("target affect score: ", self.target_affect)
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)
