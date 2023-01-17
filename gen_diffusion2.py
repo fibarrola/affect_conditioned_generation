@@ -5,7 +5,7 @@ import os
 from src.mlp import MLP
 
 
-W = 0.4
+W = 0.5
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
 MAX_ITER = 500
@@ -61,9 +61,22 @@ for prompt in PROMPTS:
             z.requires_grad = True
             opt = torch.optim.Adam([z], lr=LR)
 
-            v_0 = mlp(z_0[0, channel, :])
-            v = [v_0[k] if Vs[v_name][k] is None else Vs[v_name][k] for k in range(3)]
-            v = torch.tensor([v], device=device)
+            v_0 = mlp(data_handler.scaler_Z.scale(z_0[0, channel, :]))
+            # print(v_0)
+            dim_idx = (
+                0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
+            )
+            default_v = v_0[dim_idx].detach().item()
+            half_win_size = min(abs(1-default_v), default_v)
+
+            if v_name[0] == 'h':
+                v = torch.tensor(default_v+half_win_size, requires_grad=False, device=device).unsqueeze(0)
+            elif v_name[0] == 'l':
+                v = torch.tensor(default_v-half_win_size, requires_grad=False, device=device).unsqueeze(0)
+            
+            # print(v_name)
+            # print(default_v)
+            # print(v)
 
             if v_name != 'no_aff':
                 for iter in range(MAX_ITER):
@@ -73,11 +86,8 @@ for prompt in PROMPTS:
                     if METHOD == 'full_vec':
                         loss += W * criterion(mlp(data_handler.scaler_Z.scale(z)), v)
                     elif METHOD == 'single_dim':
-                        dim = (
-                            0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
-                        )
                         loss += W * criterion(
-                            mlp(data_handler.scaler_Z.scale(z))[:, dim], v[:, dim]
+                            mlp(data_handler.scaler_Z.scale(z))[:, dim_idx], v
                         )
                     loss.backward()
                     opt.step()

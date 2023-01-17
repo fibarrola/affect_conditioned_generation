@@ -13,7 +13,8 @@ NUM_IMGS = 6
 BATCH_SIZE = 6
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
-W = 0.2
+W = 0.4
+FOLDER = "diff_large_set4"
 
 resize = Resize(size=224)
 clip_model = clip.load('ViT-B/32', jit=False)[0].eval().requires_grad_(False).to(device)
@@ -46,16 +47,16 @@ Vs = {
     'no_aff': [],
 }
 ## Initialization
-stable_diffuser = StableDiffuser(outdir=f"results/diff_large_set3/{METHOD}_{int(10*W)}")
+stable_diffuser = StableDiffuser(outdir=f"results/{FOLDER}/{METHOD}_{int(10*W)}")
 with torch.no_grad():
     start_code = torch.randn([NUM_IMGS, 4, 512 // 8, 512 // 8], device='cpu')
     for v_name in Vs:
         for prompt in PROMPTS:
             os.makedirs(
-                f"results/diff_large_set3/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}",
+                f"results/{FOLDER}/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}",
                 exist_ok=True,
             )
-            stable_diffuser.outpath = f"results/diff_large_set3/{METHOD}_{int(10*W)}"
+            stable_diffuser.outpath = f"results/{FOLDER}/{METHOD}_{int(10*W)}"
             try:
                 if not v_name == 'no_aff':
                     with open(
