@@ -9,12 +9,12 @@ from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-NUM_IMGS = 6
+NUM_IMGS = 30
 BATCH_SIZE = 6
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
-W = 0.4
-FOLDER = "diff_large_set4"
+W = 0.5
+FOLDER = "diff_large_set6"
 
 resize = Resize(size=224)
 clip_model = clip.load('ViT-B/32', jit=False)[0].eval().requires_grad_(False).to(device)

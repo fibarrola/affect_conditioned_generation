@@ -5,22 +5,22 @@ import plotly.graph_objects as go
 from src.utils import imread
 
 
-PATH = "results/diff_large_set4/single_dim_4/"
+PATH = "results/diff_large_set4/single_dim_5/"
 PROMPTS = [
     # 'A dog in the forest',
     # 'A crocodile',
     # 'A colourful wild animal',
     # 'A dark forest',
-    # 'A forest',
+    'A forest',
     # 'A house overlooking the sea',
     # 'A large wild animal',
     # 'A spaceship',
     # 'An elephant',
     # 'An UFO',
     # 'The sea at night',
-    'The sea at sunrise',
+    # 'The sea at sunrise',
 ]
-PROMPT2 = 'An exciting sea at sunrise'
+PROMPT2 = 'A leafy forest'
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 clip_model, preprocess = clip.load('ViT-B/32', device, jit=False)
