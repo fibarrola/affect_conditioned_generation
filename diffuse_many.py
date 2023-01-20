@@ -9,11 +9,11 @@ from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-NUM_IMGS = 6
-BATCH_SIZE = 6
+NUM_IMGS = 4
+BATCH_SIZE = 4
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
-W = 0.4
+W = 0.3
 FOLDER = "diff_large_set4"
 
 resize = Resize(size=224)
@@ -57,24 +57,22 @@ with torch.no_grad():
                 exist_ok=True,
             )
             stable_diffuser.outpath = f"results/{FOLDER}/{METHOD}_{int(10*W)}"
-            try:
+            if not v_name == 'no_aff':
+                with open(
+                    f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
+                    'rb',
+                ) as f:
+                    z = pickle.load(f)
+            num_imgs = 0
+            while num_imgs < NUM_IMGS:
+                stable_diffuser.initialize(
+                    prompt=prompt,
+                    start_code=start_code[
+                        num_imgs : min(num_imgs + BATCH_SIZE, NUM_IMGS), :, :, :
+                    ],
+                )
                 if not v_name == 'no_aff':
-                    with open(
-                        f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
-                        'rb',
-                    ) as f:
-                        z = pickle.load(f)
-                num_imgs = 0
-                while num_imgs < NUM_IMGS:
-                    stable_diffuser.initialize(
-                        prompt=prompt,
-                        start_code=start_code[
-                            num_imgs : min(num_imgs + BATCH_SIZE, NUM_IMGS), :, :, :
-                        ],
-                    )
-                    if not v_name == 'no_aff':
-                        stable_diffuser.override_zz(z)
-                    stable_diffuser.run_diffusion(suffix=v_name)
-                    num_imgs += BATCH_SIZE
-            except:
-                continue
+                    stable_diffuser.override_zz(z)
+                stable_diffuser.run_diffusion(suffix=v_name)
+                num_imgs += BATCH_SIZE
+
