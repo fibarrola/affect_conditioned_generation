@@ -5,7 +5,7 @@ import os
 from src.mlp import MLP
 
 
-W = 0.5
+W = 0.3
 # METHOD = 'full_vec'
 METHOD = 'single_dim'
 MAX_ITER = 500

@@ -57,24 +57,22 @@ with torch.no_grad():
                 exist_ok=True,
             )
             stable_diffuser.outpath = f"results/{FOLDER}/{METHOD}_{int(10*W)}"
-            try:
+            if not v_name == 'no_aff':
+                with open(
+                    f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
+                    'rb',
+                ) as f:
+                    z = pickle.load(f)
+            num_imgs = 0
+            while num_imgs < NUM_IMGS:
+                stable_diffuser.initialize(
+                    prompt=prompt,
+                    start_code=start_code[
+                        num_imgs : min(num_imgs + BATCH_SIZE, NUM_IMGS), :, :, :
+                    ],
+                )
                 if not v_name == 'no_aff':
-                    with open(
-                        f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
-                        'rb',
-                    ) as f:
-                        z = pickle.load(f)
-                num_imgs = 0
-                while num_imgs < NUM_IMGS:
-                    stable_diffuser.initialize(
-                        prompt=prompt,
-                        start_code=start_code[
-                            num_imgs : min(num_imgs + BATCH_SIZE, NUM_IMGS), :, :, :
-                        ],
-                    )
-                    if not v_name == 'no_aff':
-                        stable_diffuser.override_zz(z)
-                    stable_diffuser.run_diffusion(suffix=v_name)
-                    num_imgs += BATCH_SIZE
-            except:
-                continue
+                    stable_diffuser.override_zz(z)
+                stable_diffuser.run_diffusion(suffix=v_name)
+                num_imgs += BATCH_SIZE
+
