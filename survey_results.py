@@ -28,10 +28,15 @@ fig = px.box(data_frame=df2, x='prompt', y="score", color="Mode")
 fig.update_layout(
     legend=dict(
         yanchor="bottom",
-        y=0.01,
+        y=0.0,
         xanchor="left",
-        x=0.01
+        x=0.0
     ),
+    yaxis = {
+        "title": {
+          "standoff": 1
+        }
+    }
 )
 fig.show()
 
