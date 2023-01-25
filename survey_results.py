@@ -75,9 +75,10 @@ matched.remove("Arousal")
 matched.remove("Dominance")
 matched = ["Valence", "Arousal", "Dominance"] + matched
 
+
 fig = go.Figure()
-fig.add_trace(go.Histogram(histfunc="count", x=matched, name="Match", marker={'color': 'HSL(105,40,40)'}))
-fig.add_trace(go.Histogram(histfunc="count", x=unmatched, name="No Match", marker={'color': 'HSL(0,40,50)'}))
+fig.add_trace(go.Histogram(histfunc="count", x=matched, name="Match", marker={'color': "HSL(131,66,70)"}))
+fig.add_trace(go.Histogram(histfunc="count", x=unmatched, name="No Match", marker={'color': "HSL(5,67,70)"}))
 fig.update_layout(
     legend=dict(
         yanchor="top",
