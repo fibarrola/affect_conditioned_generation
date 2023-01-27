@@ -30,6 +30,8 @@ layer_dims = [int(x) for x in config.layer_dims.split('|')]
 criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 
+channel_losses = [0 for x in range(77)]
+
 for channel in range(77):
     print(f"----- Training channel {channel} -----")
     data_handler.preprocess(scaling=config.scaling, channel=channel)
@@ -85,3 +87,9 @@ for channel in range(77):
             if valid_loss <= valid_loss_min:
                 torch.save(mlp.state_dict(), f'data/bert_nets/model_{channel}.pt')
                 valid_loss_min = valid_loss
+                channel_losses[channel] = l1_loss_txt
+
+print(channel_losses)
+channel_losses = torch.tensor(channel_losses)
+print(torch.mean(channel_losses))
+print(torch.std(channel_losses))
