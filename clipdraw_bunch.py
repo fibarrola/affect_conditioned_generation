@@ -62,12 +62,12 @@ PROMPTS = [
     'A volcano',
     'A large rainforest',
     'butterflys',
-    'Going downriver',
+    # 'Going downriver',
     'A remote island',
     'A treasure map',
     'An old temple',
     'A dream',
-    'A cloudy day in the field',
+    # 'A cloudy day in the field',
 ]
 # vv = {
 #     'no_aff': [None, None, None],

@@ -8,6 +8,19 @@ col_names = df.columns.values
 refs = df[df['Full name:']=='Ideal responder']
 df = df.drop(0)
 
+# 'Waves hitting the rocks',
+# 'The sea at nightfall',
+# 'A dark forest',
+# 'A windy night',
+# 'flaming landscape',
+# 'A volcano',
+# 'A large rainforest',
+# 'butterflys',
+# 'Going downriver',
+# 'A remote island',
+# 'A treasure map',
+# 'An old temple',
+
 data = {
     "score": [],
     'prompt': [],
@@ -17,6 +30,16 @@ for col_name in col_names:
     if col_name[:8] == 'How well':
         aff = "No AC" if refs[col_name].item() == 1 else "AC"
         prompt = col_name.split('"')[1]
+        if prompt == "Waves hitting the rocks":
+            prompt = "Waves hitting <br> the rocks"
+        elif prompt == "The sea at nightfall":
+            prompt = "The sea at <br> nightfall"
+        elif prompt == "A large rainforest":
+            prompt = "A large <br> rainforest"
+        elif prompt == "A flaming landscape":
+            prompt = "Flaming <br> landscape"
+
+
         for x in df[col_name]:
             if not np.isnan(x):
                 data["score"].append(x)
@@ -36,7 +59,8 @@ fig.update_layout(
         "title": {
           "standoff": 1
         }
-    }
+    },
+    legend_title=""
 )
 fig.show()
 
