@@ -3,6 +3,7 @@ from src.data_handler_bert import DataHandlerBERT
 import torch
 import pickle
 import argparse
+from torch.nn.functional import sigmoid
 
 parser = argparse.ArgumentParser(description='Training Parameters')
 parser.add_argument("--num_epochs", type=int, default=2500)
@@ -93,3 +94,39 @@ print(channel_losses)
 channel_losses = torch.tensor(channel_losses)
 print(torch.mean(channel_losses))
 print(torch.std(channel_losses))
+
+# def threshold_count(x, y, t):
+#     d = torch.abs(x - y) - t
+#     d = d.view(-1, 1).squeeze(1)
+#     d = sigmoid(10000 * d)
+#     r = torch.sum(d) / len(d)
+#     return r
+
+# l1_loss_txt = [0 for channel in range(77)]
+# r_txt = [0 for channel in range(77)]
+# for channel in range(77):
+#     print(f"----- Testing channel {channel} -----")
+
+#     with open(f'data/bert_nets/data_handler_bert_{channel}.pkl', 'rb') as f:
+#         data_handler = pickle.load(f)
+
+#     mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to(
+#         'cuda:0'
+#     )
+    
+#     with torch.no_grad():
+#         mlp.load_state_dict(torch.load(f'data/bert_nets/model_{channel}.pt'))
+#         mlp.eval()  # prep model for evaluation
+#         for data, label, sds in data_handler.test_loader:
+#             output = mlp(data)
+#             label = data_handler.scaler_V.unscale(label)
+#             output = data_handler.scaler_V.unscale(output)
+#             l1_loss_txt[channel] += torch.sum(torch.abs(output - label) / 8.6).item()
+#             r_txt[channel] += threshold_count(output, label, sds) * data.size(0)
+
+#         l1_loss_txt[channel] = l1_loss_txt[channel] / (3 * len(data_handler.test_loader.sampler))
+#         r_txt[channel] = r_txt[channel] / len(data_handler.test_loader.sampler)
+
+# r_txt = torch.tensor(r_txt)
+# print(torch.nanmean(r_txt))
+# print(torch.std(r_txt))

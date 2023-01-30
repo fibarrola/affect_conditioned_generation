@@ -114,3 +114,28 @@ fig.update_layout(
 )
 
 fig.show()
+
+aff_names = ["Valence", "Arousal", "Dominance"]
+matched_counts = [sum([1 for x in matched if x == aff_name]) for aff_name in aff_names]
+unmatched_counts = [sum([1 for x in unmatched if x == aff_name]) for aff_name in aff_names]
+matched_avgs = [matched_counts[k]/(matched_counts[k]+unmatched_counts[k]) for k in range(3)]
+unmatched_avgs = [unmatched_counts[k]/(matched_counts[k]+unmatched_counts[k]) for k in range(3)]
+
+fig = go.Figure()
+fig.add_trace(go.Bar(x=aff_names, y=matched_avgs, name="Match", marker={'color': "HSL(131,66,70)"}))
+fig.add_trace(go.Bar(x=aff_names, y=unmatched_avgs, name="No Match", marker={'color': "HSL(5,67,70)"}))
+fig.update_layout(
+    legend=dict(
+        yanchor="top",
+        y=0.99,
+        xanchor="right",
+        x=0.99
+    ),
+    barmode='group', bargap=0.20,bargroupgap=0.2
+)
+fig.update_yaxes(
+    tickformat= ',.0%',
+    range=[0,1]
+)
+
+fig.show()
