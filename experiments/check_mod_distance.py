@@ -58,8 +58,8 @@ for prompt in PROMPTS:
                 zz = pickle.load(f).to('cpu')
 
             # diff_0 = torch.norm((zz-z_0).squeeze(0), dim=1)
-            if v_name == 'low_A' or v_name == 'low_P' or v_name == 'low_E':
-                print(diff_1 - torch.norm((zz - z_1).squeeze(0), dim=1))
+            # if v_name == 'low_A' or v_name == 'low_P' or v_name == 'low_E':
+            #     print(diff_1 - torch.norm((zz - z_1).squeeze(0), dim=1))
             diff_1 = torch.norm((zz - z_1).squeeze(0), dim=1)
             # for channel in range(77):
             #     print(f"Adjusting Channel {channel} ...")

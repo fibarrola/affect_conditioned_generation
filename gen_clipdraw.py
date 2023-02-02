@@ -16,22 +16,13 @@ parser.add_argument(
     "--num_iter", type=int, help="maximum algorithm iterations", default=1500
 )
 parser.add_argument(
-    "--E",
-    type=float,
-    help="Evaluation (bad<good) in [0,1]",
-    default=0.5,
+    "--V", type=float, help="Valence, in [0,1]", default=0.5,
 )
 parser.add_argument(
-    "--P",
-    type=float,
-    help="Potency (weak<strong) in [0,1]",
-    default=0.5,
+    "--A", type=float, help="Arousal, in [0,1]", default=0.5,
 )
 parser.add_argument(
-    "--A",
-    type=float,
-    help="Activity (calm<exciting) in [0,1]",
-    default=0.5,
+    "--D", type=float, help="Dominance, in [0,1]", default=0.5,
 )
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
@@ -50,7 +41,7 @@ cicada.process_text(
     prompt=args.prompt,
     neg_prompt_1="Written words.",
     neg_prompt_2="Text",
-    v=[args.E, args.P, args.A],
+    v=[args.V, args.A, args.D],
 )
 
 cicada.add_random_shapes(args.num_paths)
@@ -75,7 +66,5 @@ k = 0
 while os.path.exists(f"{save_path}{args.prompt.replace(' ','_')}_{k}.png"):
     k += 1
 pydiffvg.imwrite(
-    cicada.img,
-    f"{save_path}{args.prompt.replace(' ','_')}_{k}.png",
-    gamma=1,
+    cicada.img, f"{save_path}{args.prompt.replace(' ','_')}_{k}.png", gamma=1,
 )

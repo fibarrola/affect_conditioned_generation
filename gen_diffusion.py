@@ -1,38 +1,32 @@
 import pickle
 import torch
 import copy
-import os
+import argparse
 from src.mlp import MLP
+from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 
 
-W = 0.4
-# METHOD = 'full_vec'
-METHOD = 'single_dim'
-MAX_ITER = 500
-LR = 0.1
-PROMPTS = [
-    'A dog in the forest',
-    'A crocodile',
-    'A colourful wild animal',
-    'A dark forest',
-    'A forest',
-    'A house overlooking the sea',
-    'A large wild animal',
-    'A spaceship',
-    'An elephant',
-    'An UFO',
-    'The sea at night',
-    'The sea at sunrise',
-]
-Vs = {
-    'high_E': [1.0, 0.5, 0.5],
-    'low_E': [0.0, 0.5, 0.5],
-    'high_P': [0.5, 1.0, 0.5],
-    'low_P': [0.5, 0.0, 0.5],
-    'high_A': [0.5, 0.5, 1.0],
-    'low_A': [0.5, 0.5, 0.0],
-    'no_aff': [0.5, 0.5, 0.5],
-}
+parser = argparse.ArgumentParser(description='Affect-Conditioned Stable Diffusion')
+
+parser.add_argument("--prompt", type=str, help="what to draw", default="A forest.")
+parser.add_argument("--reg", type=int, help="regularization parameter", default=0.3)
+parser.add_argument("--max_iter", type=int, help="Z search iterations", default=500)
+parser.add_argument(
+    "--V", type=float, help="Valence, in [0,1]", default=None,
+)
+parser.add_argument(
+    "--A", type=float, help="Arousal, in [0,1]", default=None,
+)
+parser.add_argument(
+    "--D", type=float, help="Dominance, in[0,1]", default=None,
+)
+parser.add_argument(
+    "--save_path", type=str, help="subfolder for saving results", default="st_diff"
+)
+args = parser.parse_args()
+
+target_v = [args.V, args.A, args.D]
+target_dims = [k for k in range(3) if not target_v[k is None]]
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 with open(f'data/bert_nets/data_handler_bert_{0}.pkl', 'rb') as f:
@@ -40,62 +34,43 @@ with open(f'data/bert_nets/data_handler_bert_{0}.pkl', 'rb') as f:
 
 mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
-mean_error = torch.nn.L1Loss(reduction='mean')
 
-for prompt in PROMPTS:
-    print(f"----- {prompt} -----")
-    z_0 = data_handler.model.get_learned_conditioning([prompt])
-    z_0.requires_grad = False
-    for v_name in Vs:
-        print(f"----- {v_name} -----")
-        zz = torch.zeros_like(z_0)
-        for channel in range(77):
-            print(f"Adjusting Channel {channel} ...")
+z_0 = data_handler.model.get_learned_conditioning([args.prompt])
+z_0.requires_grad = False
 
-            with open(f'data/bert_nets/data_handler_bert_{channel}.pkl', 'rb') as f:
-                data_handler = pickle.load(f)
-            with torch.no_grad():
-                mlp.load_state_dict(torch.load(f'data/bert_nets/model_{channel}.pt'))
+zz = torch.zeros_like(z_0)
+for channel in range(77):
+    print(f"Adjusting Channel {channel} ...")
 
-            z = copy.deepcopy(z_0[:, channel, :])
-            z.requires_grad = True
-            opt = torch.optim.Adam([z], lr=LR)
+    with open(f'data/bert_nets/data_handler_bert_{channel}.pkl', 'rb') as f:
+        data_handler = pickle.load(f)
+    with torch.no_grad():
+        mlp.load_state_dict(torch.load(f'data/bert_nets/model_{channel}.pt'))
 
-            v_0 = mlp(z_0[0, channel, :])
-            v = [v_0[k] if Vs[v_name][k] is None else Vs[v_name][k] for k in range(3)]
-            v = torch.tensor([v], device=device)
+    z = copy.deepcopy(z_0[:, channel, :])
+    z.requires_grad = True
 
-            if v_name != 'no_aff':
-                for iter in range(MAX_ITER):
-                    opt.zero_grad()
-                    loss = 0
-                    loss += criterion(z, z_0[:, channel, :])
-                    if METHOD == 'full_vec':
-                        loss += W * criterion(mlp(data_handler.scaler_Z.scale(z)), v)
-                    elif METHOD == 'single_dim':
-                        dim = (
-                            0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
-                        )
-                        loss += W * criterion(
-                            mlp(data_handler.scaler_Z.scale(z))[:, dim], v[:, dim]
-                        )
-                    loss.backward()
-                    opt.step()
+    opt = torch.optim.Adam([z], lr=0.1)
 
-            with torch.no_grad():
-                zz[0, channel, :] = copy.deepcopy(z.detach())
+    v_0 = mlp(z_0[0, channel, :])
+    if len(target_dims) > 0:
+        for iter in range(args.iter):
+            opt.zero_grad()
+            loss = 0
+            loss += criterion(z, z_0[:, channel, :])
+            for dim in target_dims:
+                loss += args.W * criterion(
+                    mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim]
+                )
+            loss.backward()
+            opt.step()
 
-            # print('dim: ', dim)
-            # print('mlp(z0): ', mlp(data_handler.scaler_Z.scale(z_0[:, channel, :])))
-            # print('mlp(z)', mlp(data_handler.scaler_Z.scale(z)))
+    with torch.no_grad():
+        zz[0, channel, :] = copy.deepcopy(z.detach())
 
-        zz = zz.to('cpu')
-        os.makedirs(
-            f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/",
-            exist_ok=True,
-        )
-        with open(
-            f"data/diff_embeddings2/{METHOD}_{int(10*W)}/{prompt.replace(' ','_')}/{v_name}.pkl",
-            'wb',
-        ) as f:
-            pickle.dump(zz, f)
+zz = zz.to('cpu')
+
+stable_diffuser = StableDiffuser(outdir=f"results/{args.save_path}/")
+stable_diffuser.initialize(prompt=args.prompt,)
+stable_diffuser.override_zz(zz)
+stable_diffuser.run_diffusion()
