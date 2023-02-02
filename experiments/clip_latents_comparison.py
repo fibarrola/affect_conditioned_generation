@@ -27,14 +27,14 @@ clip_model, preprocess = clip.load('ViT-B/32', device, jit=False)
 
 prompt = PROMPTS[0]
 
-img_names = os.listdir(PATH+prompt.replace(' ','_'))
+img_names = os.listdir(PATH + prompt.replace(' ', '_'))
 
 tokens = clip.tokenize(PROMPT2).to(device)
 z0 = clip_model.encode_text(tokens)
 
 for dim in ['E', 'P', 'A']:
     xx1 = []
-    xx2 = []    
+    xx2 = []
     with torch.no_grad():
         for img_name in img_names:
             if img_name[5] == dim:
@@ -42,13 +42,13 @@ for dim in ['E', 'P', 'A']:
                 x = torch.tensor(x)
                 x = x.permute(2, 0, 1).unsqueeze(0).to(device)
                 z = clip_model.encode_image(x)
-                xx1.append(torch.norm(z-z0).detach().item())
+                xx1.append(torch.norm(z - z0).detach().item())
             elif img_name[4] == dim:
                 x = imread(f"{PATH}{prompt.replace(' ','_')}/{img_name}", min_size=224)
                 x = torch.tensor(x)
                 x = x.permute(2, 0, 1).unsqueeze(0).to(device)
                 z = clip_model.encode_image(x)
-                xx2.append(torch.norm(z-z0).detach().item())
+                xx2.append(torch.norm(z - z0).detach().item())
 
     fig = go.Figure()
     fig.add_trace(go.Box(y=xx1, name=f"||z_high{dim}-z_new||"))

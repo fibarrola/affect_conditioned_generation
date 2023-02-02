@@ -3,7 +3,7 @@ from src.data_handler_bert import DataHandlerBERT
 import torch
 import pickle
 import argparse
-from torch.nn.functional import sigmoid
+
 
 parser = argparse.ArgumentParser(description='Training Parameters')
 parser.add_argument("--num_epochs", type=int, default=2500)

@@ -15,10 +15,7 @@ parser.add_argument(
     default="A close-up snake",
 )
 parser.add_argument(
-    "--img_path",
-    type=str,
-    help="Path of image to evaluate",
-    default=None,
+    "--img_path", type=str, help="Path of image to evaluate", default=None,
 )
 parser.add_argument(
     "--format",

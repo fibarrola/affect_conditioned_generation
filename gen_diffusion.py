@@ -1,7 +1,6 @@
 import pickle
 import torch
 import copy
-import os
 import argparse
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
@@ -10,29 +9,16 @@ from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 parser = argparse.ArgumentParser(description='Affect-Conditioned Stable Diffusion')
 
 parser.add_argument("--prompt", type=str, help="what to draw", default="A forest.")
+parser.add_argument("--reg", type=int, help="regularization parameter", default=0.3)
+parser.add_argument("--max_iter", type=int, help="Z search iterations", default=500)
 parser.add_argument(
-    "--reg", type=int, help="regularization parameter", default=0.3
-    )
-parser.add_argument(
-    "--max_iter", type=int, help="Z search iterations", default=500
-    )
-parser.add_argument(
-    "--V",
-    type=float,
-    help="Valence, in [0,1]",
-    default=None,
+    "--V", type=float, help="Valence, in [0,1]", default=None,
 )
 parser.add_argument(
-    "--A",
-    type=float,
-    help="Arousal, in [0,1]",
-    default=None,
+    "--A", type=float, help="Arousal, in [0,1]", default=None,
 )
 parser.add_argument(
-    "--D",
-    type=float,
-    help="Dominance, in[0,1]",
-    default=None,
+    "--D", type=float, help="Dominance, in[0,1]", default=None,
 )
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="st_diff"
@@ -67,7 +53,7 @@ for channel in range(77):
     opt = torch.optim.Adam([z], lr=0.1)
 
     v_0 = mlp(z_0[0, channel, :])
-    if len(target_dims)>0:
+    if len(target_dims) > 0:
         for iter in range(args.iter):
             opt.zero_grad()
             loss = 0
@@ -85,8 +71,6 @@ for channel in range(77):
 zz = zz.to('cpu')
 
 stable_diffuser = StableDiffuser(outdir=f"results/{args.save_path}/")
-stable_diffuser.initialize(
-    prompt=args.prompt,
-)
+stable_diffuser.initialize(prompt=args.prompt,)
 stable_diffuser.override_zz(zz)
 stable_diffuser.run_diffusion()

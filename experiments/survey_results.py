@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 df = pd.read_csv("data/responses.csv")
 col_names = df.columns.values
-refs = df[df['Full name:']=='Ideal responder']
+refs = df[df['Full name:'] == 'Ideal responder']
 df = df.drop(0)
 
 # 'Waves hitting the rocks',
@@ -21,11 +21,7 @@ df = df.drop(0)
 # 'A treasure map',
 # 'An old temple',
 
-data = {
-    "score": [],
-    'prompt': [],
-    "Mode": []
-}
+data = {"score": [], 'prompt': [], "Mode": []}
 for col_name in col_names:
     if col_name[:8] == 'How well':
         aff = "No AC" if refs[col_name].item() == 1 else "AC"
@@ -39,7 +35,6 @@ for col_name in col_names:
         elif prompt == "A flaming landscape":
             prompt = "Flaming <br> landscape"
 
-
         for x in df[col_name]:
             if not np.isnan(x):
                 data["score"].append(x)
@@ -49,26 +44,14 @@ for col_name in col_names:
 df2 = pd.DataFrame(data=data)
 fig = px.box(data_frame=df2, x='prompt', y="score", color="Mode")
 fig.update_layout(
-    legend=dict(
-        yanchor="bottom",
-        y=0.0,
-        xanchor="left",
-        x=0.0
-    ),
-    yaxis = {
-        "title": {
-          "standoff": 1
-        }
-    },
-    legend_title=""
+    legend=dict(yanchor="bottom", y=0.0, xanchor="left", x=0.0),
+    yaxis={"title": {"standoff": 1}},
+    legend_title="",
 )
 fig.show()
 
 
-data = {
-    'affect dim': [],
-    'match': []
-}
+data = {'affect dim': [], 'match': []}
 matched = []
 unmatched = []
 for col_name in col_names:
@@ -101,41 +84,54 @@ matched = ["Valence", "Arousal", "Dominance"] + matched
 
 
 fig = go.Figure()
-fig.add_trace(go.Histogram(histfunc="count", x=matched, name="Match", marker={'color': "HSL(131,66,70)"}))
-fig.add_trace(go.Histogram(histfunc="count", x=unmatched, name="No Match", marker={'color': "HSL(5,67,70)"}))
+fig.add_trace(
+    go.Histogram(
+        histfunc="count", x=matched, name="Match", marker={'color': "HSL(131,66,70)"}
+    )
+)
+fig.add_trace(
+    go.Histogram(
+        histfunc="count", x=unmatched, name="No Match", marker={'color': "HSL(5,67,70)"}
+    )
+)
 fig.update_layout(
-    legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="right",
-        x=0.99
-    ),
-    barmode='group', bargap=0.20,bargroupgap=0.2
+    legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+    barmode='group',
+    bargap=0.20,
+    bargroupgap=0.2,
 )
 
 fig.show()
 
 aff_names = ["Valence", "Arousal", "Dominance"]
 matched_counts = [sum([1 for x in matched if x == aff_name]) for aff_name in aff_names]
-unmatched_counts = [sum([1 for x in unmatched if x == aff_name]) for aff_name in aff_names]
-matched_avgs = [matched_counts[k]/(matched_counts[k]+unmatched_counts[k]) for k in range(3)]
-unmatched_avgs = [unmatched_counts[k]/(matched_counts[k]+unmatched_counts[k]) for k in range(3)]
+unmatched_counts = [
+    sum([1 for x in unmatched if x == aff_name]) for aff_name in aff_names
+]
+matched_avgs = [
+    matched_counts[k] / (matched_counts[k] + unmatched_counts[k]) for k in range(3)
+]
+unmatched_avgs = [
+    unmatched_counts[k] / (matched_counts[k] + unmatched_counts[k]) for k in range(3)
+]
 
 fig = go.Figure()
-fig.add_trace(go.Bar(x=aff_names, y=matched_avgs, name="Match", marker={'color': "HSL(131,66,70)"}))
-fig.add_trace(go.Bar(x=aff_names, y=unmatched_avgs, name="No Match", marker={'color': "HSL(5,67,70)"}))
+fig.add_trace(
+    go.Bar(
+        x=aff_names, y=matched_avgs, name="Match", marker={'color': "HSL(131,66,70)"}
+    )
+)
+fig.add_trace(
+    go.Bar(
+        x=aff_names, y=unmatched_avgs, name="No Match", marker={'color': "HSL(5,67,70)"}
+    )
+)
 fig.update_layout(
-    legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="right",
-        x=0.99
-    ),
-    barmode='group', bargap=0.20,bargroupgap=0.2
+    legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+    barmode='group',
+    bargap=0.20,
+    bargroupgap=0.2,
 )
-fig.update_yaxes(
-    tickformat= ',.0%',
-    range=[0,1]
-)
+fig.update_yaxes(tickformat=',.0%', range=[0, 1])
 
 fig.show()

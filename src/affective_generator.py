@@ -184,7 +184,7 @@ class AffectiveGenerator:
 
         if len(self.target_affect) >= 1:
             z = self.data_handler.scaler_Z.scale(iii)
-            result.append(aff_weight*F.mse_loss(self.mlp(z), self.target_affect))
+            result.append(aff_weight * F.mse_loss(self.mlp(z), self.target_affect))
 
         return result
 

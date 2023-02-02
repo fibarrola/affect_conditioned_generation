@@ -75,4 +75,3 @@ with torch.no_grad():
                     stable_diffuser.override_zz(z)
                 stable_diffuser.run_diffusion(suffix=v_name)
                 num_imgs += BATCH_SIZE
-

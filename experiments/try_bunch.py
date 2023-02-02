@@ -52,7 +52,7 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                img_savedir = f"results/vqgan_scaled_02/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                img_savedir=f"results/vqgan_scaled_02/{trial}_{prompt.replace(' ','_')}_{v}.png",
                 seed=trial,
                 # noise_0=noise_0,
             )

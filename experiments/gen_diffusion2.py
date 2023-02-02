@@ -63,17 +63,19 @@ for prompt in PROMPTS:
 
             v_0 = mlp(data_handler.scaler_Z.scale(z_0[0, channel, :]))
             # print(v_0)
-            dim_idx = (
-                0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
-            )
+            dim_idx = 0 if v_name[-1] == 'E' else (1 if v_name[-1] == 'P' else 2)
             default_v = v_0[dim_idx].detach().item()
-            half_win_size = min(abs(1-default_v), default_v)
+            half_win_size = min(abs(1 - default_v), default_v)
 
             if v_name[0] == 'h':
-                v = torch.tensor(default_v+half_win_size, requires_grad=False, device=device).unsqueeze(0)
+                v = torch.tensor(
+                    default_v + half_win_size, requires_grad=False, device=device
+                ).unsqueeze(0)
             elif v_name[0] == 'l':
-                v = torch.tensor(default_v-half_win_size, requires_grad=False, device=device).unsqueeze(0)
-            
+                v = torch.tensor(
+                    default_v - half_win_size, requires_grad=False, device=device
+                ).unsqueeze(0)
+
             # print(v_name)
             # print(default_v)
             # print(v)
