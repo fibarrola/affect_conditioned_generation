@@ -15,21 +15,21 @@ parser.add_argument(
     default="A flaming landscape",
 )
 parser.add_argument(
-    "--E",
+    "--V",
     type=float,
-    help="Evaluation (bad<good) in [0,1]",
-    default=None,
-)
-parser.add_argument(
-    "--P",
-    type=float,
-    help="Potency (weak<strong) in [0,1]",
+    help="Valence, in [0,1]",
     default=None,
 )
 parser.add_argument(
     "--A",
     type=float,
-    help="Activity (calm<exciting) in [0,1]",
+    help="Arousal, in [0,1]",
+    default=None,
+)
+parser.add_argument(
+    "--D",
+    type=float,
+    help="Dominance, in [0,1]",
     default=None,
 )
 parser.add_argument(
@@ -42,7 +42,7 @@ config = parser.parse_args()
 
 
 affective_generator = AffectiveGenerator()
-affective_generator.initialize(prompts=config.prompt, v=[config.E, config.P, config.A])
+affective_generator.initialize(prompts=config.prompt, v=[config.V, config.A, config.D])
 i = 0
 try:
     with tqdm() as pbar:

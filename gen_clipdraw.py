@@ -16,21 +16,21 @@ parser.add_argument(
     "--num_iter", type=int, help="maximum algorithm iterations", default=1500
 )
 parser.add_argument(
-    "--E",
+    "--V",
     type=float,
-    help="Evaluation (bad<good) in [0,1]",
-    default=0.5,
-)
-parser.add_argument(
-    "--P",
-    type=float,
-    help="Potency (weak<strong) in [0,1]",
+    help="Valence, in [0,1]",
     default=0.5,
 )
 parser.add_argument(
     "--A",
     type=float,
-    help="Activity (calm<exciting) in [0,1]",
+    help="Arousal, in [0,1]",
+    default=0.5,
+)
+parser.add_argument(
+    "--D",
+    type=float,
+    help="Dominance, in [0,1]",
     default=0.5,
 )
 parser.add_argument(
@@ -50,7 +50,7 @@ cicada.process_text(
     prompt=args.prompt,
     neg_prompt_1="Written words.",
     neg_prompt_2="Text",
-    v=[args.E, args.P, args.A],
+    v=[args.V, args.A, args.D],
 )
 
 cicada.add_random_shapes(args.num_paths)
