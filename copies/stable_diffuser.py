@@ -138,7 +138,7 @@ class StableDiffuser:
         self.H = H
         if start_code is None:
             self.start_code = torch.randn(
-                [self.n_samples, self.C, self.H // self.f, self.W // self.f],
+                [n_samples, self.C, self.H // self.f, self.W // self.f],
                 device=device,
             )
             self.n_samples = n_samples
