@@ -25,10 +25,13 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-target_v = [args.V, args.A, args.D]
-target_dims = [k for k in range(3) if not target_v[k is None]]
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+target_v = [args.V, args.A, args.D]
+target_dims = [k for k in range(3) if not target_v[k] is None]
+target_v = torch.tensor([0.5 if v is None else v for v in target_v], device=device, requires_grad=False)
+
 with open(f'data/bert_nets/data_handler_bert_{0}.pkl', 'rb') as f:
     data_handler = pickle.load(f)
 
@@ -54,12 +57,12 @@ for channel in range(77):
 
     v_0 = mlp(z_0[0, channel, :])
     if len(target_dims) > 0:
-        for iter in range(args.iter):
+        for iter in range(args.max_iter):
             opt.zero_grad()
             loss = 0
             loss += criterion(z, z_0[:, channel, :])
             for dim in target_dims:
-                loss += args.W * criterion(
+                loss += args.reg * criterion(
                     mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim]
                 )
             loss.backward()

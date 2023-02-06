@@ -46,7 +46,6 @@ with torch.no_grad():
         x = torch.tensor(x)
         x = x.permute(2, 0, 1).unsqueeze(0).to(device)
         z = clip_model.encode_image(x)
-        # z = z.unsqueeze(0)
         z = data_handler.scaler_Z.scale(z)
 
     mlp.eval()
@@ -57,7 +56,7 @@ with torch.no_grad():
 output = [x.item() for x in output.to('cpu')[0]]
 
 if config.format in ['score', 'uniform']:
-    print("E = {:.2f}, P = {:.2f}, A = {:.2f}".format(output[0], output[1], output[2]))
+    print("V = {:.2f}, A = {:.2f}, D = {:.2f}".format(output[0], output[1], output[2]))
 else:
     print(
         "& ${:.2f}$ & ${:.2f}$ & ${:.2f}$ \\\\".format(output[0], output[1], output[2])
