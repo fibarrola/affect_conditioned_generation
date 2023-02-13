@@ -32,7 +32,7 @@ data_handler = DataHandler("data/Ratings_Warriner_et_al.csv")
 data_handler.preprocess(scaling=config.scaling)
 data_handler.build_datasets()
 
-with open('data/data_handler_mixed.pkl', 'wb') as f:
+with open('public_data/data_handler_mixed.pkl', 'wb') as f:
     pickle.dump(data_handler, f)
 
 layer_dims = [int(x) for x in config.layer_dims.split('|')]

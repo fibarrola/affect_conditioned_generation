@@ -24,13 +24,18 @@ parser.add_argument(
     "--D", type=float, help="Dominance, in [0,1]", default=None,
 )
 parser.add_argument(
-    "--max_iter", type=int, help="Activity (calm<exciting) in [0,1]", default=2500,
+    "--max_iter", type=int, help="max VQGAN iterations", default=1500,
+)
+parser.add_argument(
+    "--outdir", type=str, help="sample output directory", default="results",
 )
 config = parser.parse_args()
 
 
 affective_generator = AffectiveGenerator()
-affective_generator.initialize(prompts=config.prompt, v=[config.V, config.A, config.D])
+affective_generator.initialize(
+    prompts=config.prompt, v=[config.V, config.A, config.D], outdir=config.outdir
+)
 i = 0
 try:
     with tqdm() as pbar:

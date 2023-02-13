@@ -30,7 +30,9 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 target_v = [args.V, args.A, args.D]
 target_dims = [k for k in range(3) if not target_v[k] is None]
-target_v = torch.tensor([0.5 if v is None else v for v in target_v], device=device, requires_grad=False)
+target_v = torch.tensor(
+    [0.5 if v is None else v for v in target_v], device=device, requires_grad=False
+)
 
 with open(f'data/bert_nets/data_handler_bert_{0}.pkl', 'rb') as f:
     data_handler = pickle.load(f)
