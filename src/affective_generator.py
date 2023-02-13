@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import os
 from torchvision import transforms
 from torchvision.transforms import functional as TF
 from tqdm.notebook import tqdm
@@ -88,10 +89,17 @@ class AffectiveGenerator:
         lr=0.1,
         noise_prompt_seeds=[],
         noise_prompt_weights=[],
-        img_savedir='default.png',
+        outdir='results',
         noise_0=[],
     ):
-        self.img_savedir = img_savedir
+
+        # avoid overwriting
+        k = 0
+        while os.path.exists(f"{outdir}/{prompts.replace(' ','_')}_{k}.png"):
+            k += 1
+        self.img_savedir = f"{outdir}/{prompts.replace(' ','_')}_{k}.png"
+
+        # split prompt if multiple
         prompts = [prompt.strip() for prompt in prompts.split("|")]
 
         self.target_affect = self.process_epa(v, prompts)

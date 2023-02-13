@@ -12,7 +12,16 @@ python3 get_affect.py
 
 ## Train MLP
 
-We do not provide the image
+### Preliminaries
+
+If you would like to retrain the network,
+
+word ratings can be downloaded from http://crr.ugent.be/archives/1003
+
+images are subject to a confidentiality agreement and are hence not provided.
+
+
+### Run
 ```
 python3 train_mlp.py
 --num_epochs <int>      number of training epochs
@@ -50,6 +59,7 @@ python3 gen_vqganclip.py
 --A <float>             Arousal score (calm<exciting) in [0,1], default=None,
 --D <float>             Dominance score (from http://crr.ugent.be/archives/1003controlled<in control) in [0,1], default=None,
 --max_iter <int>        Number of algorithm iterations
+--outdir <str>          Output directory
 ```
 <br>
 
