@@ -33,7 +33,9 @@ config = parser.parse_args()
 
 
 affective_generator = AffectiveGenerator()
-affective_generator.initialize(prompts=config.prompt, v=[config.V, config.A, config.D], outdir=config.outdir)
+affective_generator.initialize(
+    prompts=config.prompt, v=[config.V, config.A, config.D], outdir=config.outdir
+)
 i = 0
 try:
     with tqdm() as pbar:
