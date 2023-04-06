@@ -11,31 +11,40 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 PROMPTS = [
-    'Waves hitting the rocks',
-    'The sea at nightfall',
-    'A dark forest',
-    'A windy night',
+    # 'Waves hitting the rocks',
+    # 'The sea at nightfall',
+    # 'A dark forest',
+    # 'A windy night',
     'flaming landscape',
-    'A volcano',
-    'A large rainforest',
-    'butterflys',
-    'Going downriver',
-    'A remote island',
-    'A treasure map',
-    'An old temple',
+    # 'A volcano',
+    # 'A large rainforest',
+    # 'butterflys',
+    # 'Going downriver',
+    # 'A remote island',
+    # 'A treasure map',
+    # 'An old temple',
 ]
 MAX_ITER = 1500
 AFF_WEIGHT = 7
 N_TRIALS = 1
+# vv = {
+#     'high_E': [1.0, 0.5, 0.5],
+#     'low_E': [0.0, 0.5, 0.5],
+#     'high_P': [0.5, 1.0, 0.5],
+#     'low_P': [0.5, 0.0, 0.5],
+#     'high_A': [0.5, 0.5, 1.0],
+#     'low_A': [0.5, 0.5, 0.0],
+#     'no_aff': [None, None, None],
+# }
 vv = {
-    'high_E': [1.0, 0.5, 0.5],
-    'low_E': [0.0, 0.5, 0.5],
-    'high_P': [0.5, 1.0, 0.5],
-    'low_P': [0.5, 0.0, 0.5],
-    'high_A': [0.5, 0.5, 1.0],
-    'low_A': [0.5, 0.5, 0.0],
-    'no_aff': [None, None, None],
+    'E99': [1.0, 0.5, 0.5],
+    'E75': [0.75, 0.5, 0.5],
+    'E50': [0.5, 0.5, 0.5],
+    'E24': [0.25, 0.5, 0.5],
+    'E00': [0., 0.5, 0.5],
+
 }
+
 
 affective_generator = AffectiveGenerator()
 for trial in range(N_TRIALS):
@@ -52,14 +61,14 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                img_savedir=f"results/vqgan_scaled_02/{trial}_{prompt.replace(' ','_')}_{v}.png",
+                # outdir=f"results/scaled",
                 seed=trial,
                 # noise_0=noise_0,
             )
             i = 0
             with tqdm() as pbar:
                 while True:
-                    affective_generator.train(i, AFF_WEIGHT)
+                    affective_generator.train(iter=i, aff_weight=AFF_WEIGHT)
                     if i == MAX_ITER:
                         break
                     i += 1

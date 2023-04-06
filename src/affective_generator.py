@@ -123,6 +123,11 @@ class AffectiveGenerator:
                     self.n_toks, [self.toksY * self.toksX], device=device
                 )
             )
+            # with open("data/aux.pkl", "wb") as f:
+            #     pickle.dump(noise_0.detach().to("cpu"), f)
+            with open("data/aux.pkl", "rb") as f:
+                noise_0 = pickle.load(f).to(device)   
+
             one_hot = F.one_hot(noise_0, self.n_toks).float()
             self.z = one_hot @ self.vqg_model.quantize.embedding.weight
             self.z = self.z.view([-1, self.toksY, self.toksX, self.e_dim]).permute(
@@ -154,7 +159,7 @@ class AffectiveGenerator:
             self.pMs.append(Prompt(embed, weight, stop).to(device))
 
         for seed, weight in zip(noise_prompt_seeds, noise_prompt_weights):
-            gen = torch.Generator().manual_seed(seed)
+            gen = torch.Generator().manual_seed(42)
             embed = torch.empty([1, self.clip_model.visual.output_dim]).normal_(
                 generator=gen
             )
