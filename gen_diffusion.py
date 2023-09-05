@@ -67,7 +67,6 @@ for channel in range(77):
                 opt.zero_grad()
                 loss = 0
                 loss += criterion(z, z_0[:, channel, :])
-                print(z.shape, z_0[:, channel, :].shape)
                 for dim in target_dims:
                     loss += args.reg * criterion(
                         mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim:dim+1]
