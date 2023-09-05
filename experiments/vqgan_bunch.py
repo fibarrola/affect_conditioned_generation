@@ -1,8 +1,6 @@
-# @title Carga de bibliotecas y definiciones
-
 from tqdm.notebook import tqdm
 from PIL import ImageFile
-from src.affective_generator import AffectiveGenerator
+from src.affective_generator2 import AffectiveGenerator
 import torch
 import os
 
@@ -59,7 +57,7 @@ for trial in range(N_TRIALS):
             affective_generator.initialize(
                 prompts=prompt,
                 v=vv[v],
-                outdir=f"results/vqgan_R1/{prompt.replace(' ','_')}/{trial}_{v}.png",
+                savepath =f"results/vqgan_R1/{prompt.replace(' ','_')}/{trial}_{v}.png",
                 seed=trial,
                 noise_0=noise_0,
             )
