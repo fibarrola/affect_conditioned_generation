@@ -96,7 +96,7 @@ def print_progress_bar(
     printEnd="\r",
 ):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    loss = "{:3f}".format(loss)
+    loss = "{:1d}".format(loss) if type(loss)==int else "{:3f}".format(loss)
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
     print(f'\r{prefix} |{bar}| {percent}% {suffix} {loss}', end=printEnd)
