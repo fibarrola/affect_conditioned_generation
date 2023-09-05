@@ -5,6 +5,7 @@ from torch.utils.data import random_split, TensorDataset, DataLoader
 import numpy as np
 from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
+import pickle
 
 
 def load_model_from_config(config, ckpt, verbose=False):
@@ -39,11 +40,11 @@ class DataHandlerBERT:
         )
 
     @torch.no_grad()
-    def preprocess(self, word_type=None, scaling='none', word_batch_size=2048, channel=9):
+    def preprocess(self, savepath, word_type=None, scaling='none', word_batch_size=2048, channel=9):
         torch.cuda.empty_cache()
         fil_df = self.df[self.df["Type"] == word_type] if word_type else self.df
         self.words = list(fil_df["Word"])
-        self.Z = torch.tensor([], device=self.device)
+        Z = torch.tensor([], device=self.device)
         torch.cuda.empty_cache()
         for m in range(
             int(np.ceil(len(self.words) / word_batch_size))
@@ -54,21 +55,37 @@ class DataHandlerBERT:
             ]
             with torch.no_grad():
                 Z_subset = self.model.get_learned_conditioning(words_subset)[:, channel, :]
-                self.Z = torch.cat([self.Z, Z_subset], 0)
+                Z = torch.cat([Z, Z_subset], 0)
                 if len(self.words) <= (m + 1) * word_batch_size:
                     break
 
         dim_names = ['V.Mean.Sum', 'A.Mean.Sum', 'D.Mean.Sum']
-        self.V = torch.tensor(
+        V = torch.tensor(
             fil_df[dim_names].values, device=self.device, dtype=torch.float32
         )
         sd_dim_names = ['V.SD.Sum', 'A.SD.Sum', 'D.SD.Sum']
-        self.Vsd = torch.tensor(
+        Vsd = torch.tensor(
             fil_df[sd_dim_names].values, device=self.device, dtype=torch.float32
         )
-
-        self.scaler_Z = Scaler(self.Z, scaling)
-        self.scaler_V = Scaler(self.V, scaling)
+        data = {
+            "Z": Z,
+            "V": V,
+            "Vsd": Vsd,
+            "scaling": scaling
+        }
+        with open(savepath, 'wb') as f:
+            pickle.dump(data, f)    
+    
+    @torch.no_grad()
+    def load_data(self, savepath):
+        with open(savepath, 'rb') as f:
+            data = pickle.load(f)
+        self.Z = data["Z"]
+        self.V = data["V"]
+        self.Vsd = data ["Vsd"]
+        self.scaler_Z = Scaler(self.Z, data["scaling"])
+        print("constant encoding", torch.mean(self.scaler_Z.ub-self.scaler_Z.lb).item())
+        self.scaler_V = Scaler(self.V, data["scaling"])
 
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):

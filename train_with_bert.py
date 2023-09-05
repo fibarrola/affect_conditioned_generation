@@ -32,14 +32,14 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 
 channel_losses = [0 for x in range(77)]
+loss_hist = [[] for x in range(77)]
 
-for channel in range(77):
+for channel in range(1, 77):
     print(f"----- Training channel {channel} -----")
-    data_handler.preprocess(scaling=config.scaling, channel=channel)
+    path = f"data/bert_nets/data_ch_{channel}.pkl"
+    data_handler.preprocess(savepath=path,scaling=config.scaling, channel=channel)
+    data_handler.load_data(savepath=path)
     data_handler.build_datasets()
-
-    with open(f'data/bert_nets/data_handler_bert_{channel}.pkl', 'wb') as f:
-        pickle.dump(data_handler, f)
 
     mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to(
         'cuda:0'
@@ -86,6 +86,10 @@ for channel in range(77):
 
             # save model
             if valid_loss <= valid_loss_min:
-                torch.save(mlp.state_dict(), f'data/bert_nets/model_{channel}.pt')
+                torch.save(mlp.state_dict(), f'data/bert_nets/model_ch_{channel}.pt')
                 valid_loss_min = valid_loss
-                channel_losses[channel] = l1_loss_txt
+                loss_hist[channel].append(valid_loss)
+
+
+with open(f'data/bert_nets/loss_hist.pkl', 'wb') as f:
+    pickle.dump(loss_hist, f)
