@@ -37,7 +37,6 @@ loss_hist = [[] for x in range(77)]
 for channel in range(1, 77):
     print(f"----- Training channel {channel} -----")
     path = f"data/bert_nets/data_ch_{channel}.pkl"
-    data_handler.preprocess(savepath=path,scaling=config.scaling, channel=channel)
     data_handler.load_data(savepath=path)
     data_handler.build_datasets()
 
