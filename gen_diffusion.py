@@ -5,6 +5,7 @@ import argparse
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 from src.data_handler_bert import DataHandlerBERT
+from src.utils import print_progress_bar
 
 
 parser = argparse.ArgumentParser(description='Affect-Conditioned Stable Diffusion')
@@ -34,6 +35,7 @@ target_dims = [k for k in range(3) if not target_v[k] is None]
 target_v = torch.tensor(
     [0.5 if v is None else v for v in target_v], device=device, requires_grad=False
 )
+print(target_dims)
 
 mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
@@ -44,7 +46,7 @@ z_0.requires_grad = False
 
 zz = torch.zeros_like(z_0)
 for channel in range(77):
-    print(f"Adjusting Channel {channel} ...")
+    print_progress_bar(channel+1, 77, channel, suffix= "-- Channel:")
 
     path = f"data/bert_nets/data_ch_{channel}.pkl"
     data_handler.load_data(savepath=path)
@@ -65,9 +67,10 @@ for channel in range(77):
                 opt.zero_grad()
                 loss = 0
                 loss += criterion(z, z_0[:, channel, :])
+                print(z.shape, z_0[:, channel, :].shape)
                 for dim in target_dims:
                     loss += args.reg * criterion(
-                        mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim]
+                        mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim:dim+1]
                     )
                 loss.backward()
                 opt.step()

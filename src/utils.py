@@ -83,3 +83,23 @@ def checked_path(filepath, extension):
         k += 1
 
     return f"{filepath}{k}.{extension}"
+
+def print_progress_bar(
+    iteration,
+    total,
+    loss,
+    prefix='Progress',
+    suffix='-- Loss: ',
+    decimals=1,
+    length=50,
+    fill='█',
+    printEnd="\r",
+):
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    loss = "{:3f}".format(loss)
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix} {loss}', end=printEnd)
+    # Print New Line on Complete
+    if iteration == total:
+        print()
