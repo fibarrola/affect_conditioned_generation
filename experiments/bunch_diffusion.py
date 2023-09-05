@@ -41,12 +41,12 @@ vv = {
     '000': [None, None, None],
 }
 
-mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
 
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 
 for prompt in PROMPTS:
+
     folder = f"results/stdiff_R1/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
@@ -71,6 +71,7 @@ for prompt in PROMPTS:
             data_handler.load_data(savepath=path)
 
             with torch.no_grad():
+                mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
                 mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
 
             z = copy.deepcopy(z_0[:, channel, :])
@@ -95,6 +96,8 @@ for prompt in PROMPTS:
 
             with torch.no_grad():
                 zz[0, channel, :] = copy.deepcopy(z.detach())
+            
+            torch.cuda.empty_cache()
 
         zz = zz.to('cpu')
 
