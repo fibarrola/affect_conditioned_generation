@@ -98,7 +98,7 @@ for prompt in PROMPTS:
 
         zz = zz.to('cpu')
 
-        stable_diffuser = StableDiffuser(outdir=f"{folder}/{v_name}")
+        stable_diffuser = StableDiffuser()
         stable_diffuser.initialize(prompt=prompt)
         stable_diffuser.override_zz(zz)
-        stable_diffuser.run_diffusion()
+        stable_diffuser.run_diffusion(alt_savepath=f"{folder}/0_{v_name}.png")
