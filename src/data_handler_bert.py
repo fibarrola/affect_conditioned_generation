@@ -84,7 +84,6 @@ class DataHandlerBERT:
         self.V = data["V"]
         self.Vsd = data ["Vsd"]
         self.scaler_Z = Scaler(self.Z, data["scaling"])
-        print("constant encoding", torch.mean(self.scaler_Z.ub-self.scaler_Z.lb).item())
         self.scaler_V = Scaler(self.V, data["scaling"])
 
     @torch.no_grad()
