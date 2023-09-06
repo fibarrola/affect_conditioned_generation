@@ -36,7 +36,7 @@ class DataHandlerBERT:
             "stable_diffusion/configs/stable-diffusion/v1-inference.yaml"
         )
         self.model = load_model_from_config(
-            config, "stable_diffusion/models/ldm/stable-diffusion-v1/model.ckpt"
+            config, "stable_diffusion/models/ldm/stable-diffusion-v1/v1-5-pruned-emaonly.ckpt"
         )
 
     @torch.no_grad()
