@@ -103,7 +103,7 @@ class StableDiffuser:
     def __init__(
         self,
         config="stable_diffusion/configs/stable-diffusion/v1-inference.yaml",
-        ckpt="stable_diffusion/models/ldm/stable-diffusion-v1/model.ckpt",
+        ckpt="stable_diffusion/models/ldm/stable-diffusion-v1/v1-5-pruned-emaonly.ckpt",
         outdir="stable_diffusion/outputs/txt2img-samples",
     ):
         config = OmegaConf.load(f"{config}")

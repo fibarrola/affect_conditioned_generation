@@ -9,7 +9,10 @@ import os
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-RECOMPUTE_MEANS = False
+MAX_ITER = 1000
+AFF_WEIGHT = 1
+FOLDER = "results/stdiff_R2"
+RECOMPUTE_MEANS = True
 PROMPTS = [
     "Sea",
     "Forest",
@@ -49,9 +52,7 @@ else:
         mean_affects = pickle.load(f)
             
 
-MAX_ITER = 1000
-AFF_WEIGHT = 1
-N_TRIALS = 1
+# MAIN starts here
 vv = {
     '000': [None, None, None],
     'V90': [0.90, None, None],
@@ -77,7 +78,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 for prompt in PROMPTS:
 
-    folder = f"results/stdiff_R1/{prompt.replace(' ','_')}"
+    folder = f"{FOLDER}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
     z_0 = data_handler.model.get_learned_conditioning([prompt])
@@ -87,7 +88,7 @@ for prompt in PROMPTS:
 
     for aff_idx in range(3):
         for tick in range(5):
-            aff_val = mean_affects[prompt][aff_idx]-(2-tick)*dists[aff_idx]
+            aff_val = mean_affects[prompt][aff_idx]-(1-0.5*tick)*dists[aff_idx]
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val.item())}"
 
             print(f"Generating {prompt} with affect {v_name}...")
@@ -118,12 +119,10 @@ for prompt in PROMPTS:
                             loss = 0
                             loss += criterion(z, z_0[:, channel, :])
                             loss += AFF_WEIGHT * criterion(
-                                mlp(data_handler.scaler_Z.scale(z))[:, aff_idx], aff_val
+                                mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), aff_val
                             )
                             loss.backward()
                             opt.step()
-
-                        print(mlp(data_handler.scaler_Z.scale(z))[:, aff_idx])
 
                 with torch.no_grad():
                     zz[0, channel, :] = copy.deepcopy(z.detach())
