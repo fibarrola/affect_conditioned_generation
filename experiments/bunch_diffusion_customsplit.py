@@ -9,8 +9,8 @@ import os
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-MAX_ITER = 1500
-AFF_WEIGHT = 10
+MAX_ITER = 2000
+AFF_WEIGHT = 50
 FOLDER = "results/stdiff_R2"
 RECOMPUTE_MEANS = True
 N_SAMPLES = 3
