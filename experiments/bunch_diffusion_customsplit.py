@@ -9,10 +9,11 @@ import os
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-MAX_ITER = 1000
-AFF_WEIGHT = 1
+MAX_ITER = 1500
+AFF_WEIGHT = 10
 FOLDER = "results/stdiff_R2"
 RECOMPUTE_MEANS = True
+N_SAMPLES = 3
 PROMPTS = [
     "Sea",
     "Forest",
@@ -53,24 +54,6 @@ else:
             
 
 # MAIN starts here
-vv = {
-    '000': [None, None, None],
-    'V90': [0.90, None, None],
-    'V65': [0.65, None, None],
-    'V50': [0.50, None, None],
-    'V35': [0.35, None, None],
-    'V10': [0.10, None, None],
-    'A90': [None, 0.90, None],
-    'A65': [None, 0.65, None],
-    'A50': [None, 0.50, None],
-    'A35': [None, 0.35, None],
-    'A10': [None, 0.10, None],
-    'D90': [None, None, 0.90],
-    'D65': [None, None, 0.65],
-    'D50': [None, None, 0.50],
-    'D35': [None, None, 0.35],
-    'D10': [None, None, 0.10],
-}
 aff_names = ["V", "A", "D"]
 
 criterion = torch.nn.MSELoss(reduction='mean')
@@ -85,6 +68,11 @@ for prompt in PROMPTS:
     z_0.requires_grad = False
 
     dists = torch.min(0.95*torch.ones((3), device=device)-mean_affects[prompt], mean_affects[prompt]-0.05*torch.ones((3), device=device))
+
+    start_code = torch.randn(
+        [N_SAMPLES, 4, 512 // 8, 512 // 8],
+        device=device,
+    )
 
     for aff_idx in range(3):
         for tick in range(5):
@@ -129,10 +117,12 @@ for prompt in PROMPTS:
                 
                 torch.cuda.empty_cache()
 
+            # print(zz[:3,:3,:3])
             zz = zz.to('cpu')
 
             stable_diffuser = StableDiffuser()
-            stable_diffuser.initialize(prompt=prompt)
+            stable_diffuser.initialize(prompt=prompt, start_code = start_code)
             if tick != 2:
+                print("MOD!")
                 stable_diffuser.override_zz(zz)
-            stable_diffuser.run_diffusion(alt_savepath=f"{folder}/0_{v_name}.png")
+            stable_diffuser.run_diffusion(alt_savepath=folder, im_name = v_name)
