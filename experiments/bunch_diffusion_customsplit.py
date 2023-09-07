@@ -10,9 +10,9 @@ import os
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 2000
-AFF_WEIGHT = 50
-FOLDER = "results/stdiff_R2"
-RECOMPUTE_MEANS = True
+AFF_WEIGHT = 500
+FOLDER = "results/stdiff_R4"
+RECOMPUTE_MEANS = False
 N_SAMPLES = 3
 PROMPTS = [
     "Sea",
@@ -73,56 +73,56 @@ for prompt in PROMPTS:
         [N_SAMPLES, 4, 512 // 8, 512 // 8],
         device=device,
     )
+    for chance in range(3):
+        for aff_idx in range(3):
+            for tick in range(5):
+                aff_val = mean_affects[prompt][aff_idx]-(1-0.5*tick)*dists[aff_idx]
+                v_name = f"{aff_names[aff_idx]}_{round(100*aff_val.item())}"
 
-    for aff_idx in range(3):
-        for tick in range(5):
-            aff_val = mean_affects[prompt][aff_idx]-(1-0.5*tick)*dists[aff_idx]
-            v_name = f"{aff_names[aff_idx]}_{round(100*aff_val.item())}"
+                print(f"Generating {prompt} with affect {v_name}...")
 
-            print(f"Generating {prompt} with affect {v_name}...")
-
-            zz = torch.zeros_like(z_0)
-            
-            for channel in range(77):
-                print_progress_bar(channel+1, 77, channel+1, suffix= "-- Channel:")
-
-                path = f"data/bert_nets/data_ch_{channel}.pkl"
-                data_handler.load_data(savepath=path)
-
-                with torch.no_grad():
-                    mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
-                    mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
-
-                z = copy.deepcopy(z_0[:, channel, :])
-
-                if channel != 0: #channel 0 has no info
-                    z.requires_grad = True
-
-                    opt = torch.optim.Adam([z], lr=0.1)
-
-                    v_0 = mlp(z_0[0, channel, :])
-                    if tick!=2:
-                        for iter in range(MAX_ITER):
-                            opt.zero_grad()
-                            loss = 0
-                            loss += criterion(z, z_0[:, channel, :])
-                            loss += AFF_WEIGHT * criterion(
-                                mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), aff_val
-                            )
-                            loss.backward()
-                            opt.step()
-
-                with torch.no_grad():
-                    zz[0, channel, :] = copy.deepcopy(z.detach())
+                zz = torch.zeros_like(z_0)
                 
-                torch.cuda.empty_cache()
+                for channel in range(77):
+                    print_progress_bar(channel+1, 77, channel+1, suffix= "-- Channel:")
 
-            # print(zz[:3,:3,:3])
-            zz = zz.to('cpu')
+                    path = f"data/bert_nets/data_ch_{channel}.pkl"
+                    data_handler.load_data(savepath=path)
 
-            stable_diffuser = StableDiffuser()
-            stable_diffuser.initialize(prompt=prompt, start_code = start_code)
-            if tick != 2:
-                print("MOD!")
-                stable_diffuser.override_zz(zz)
-            stable_diffuser.run_diffusion(alt_savepath=folder, im_name = v_name)
+                    with torch.no_grad():
+                        mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+                        mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
+
+                    z = copy.deepcopy(z_0[:, channel, :])
+
+                    if channel != 0: #channel 0 has no info
+                        z.requires_grad = True
+
+                        opt = torch.optim.Adam([z], lr=0.15)
+
+                        v_0 = mlp(z_0[0, channel, :])
+                        if tick!=2:
+                            for iter in range(MAX_ITER):
+                                opt.zero_grad()
+                                loss = 0
+                                loss += criterion(z, z_0[:, channel, :])
+                                loss += AFF_WEIGHT * criterion(
+                                    mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), aff_val
+                                )
+                                loss.backward()
+                                opt.step()
+
+                    with torch.no_grad():
+                        zz[0, channel, :] = copy.deepcopy(z.detach())
+                    
+                    torch.cuda.empty_cache()
+
+                # print(zz[:3,:3,:3])
+                zz = zz.to('cpu')
+
+                stable_diffuser = StableDiffuser()
+                stable_diffuser.initialize(prompt=prompt, start_code = start_code)
+                if tick != 2:
+                    print("MOD!")
+                    stable_diffuser.override_zz(zz)
+                stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{chance}_{v_name}")
