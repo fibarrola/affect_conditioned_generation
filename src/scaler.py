@@ -25,7 +25,7 @@ class Scaler:
 
     def scale(self, X):
         if self.method == 'uniform':
-            if torch.sum(self.ub - self.lb) == 0:
+            if torch.sum(torch.tensor(self.ub - self.lb)) == 0:
                 return X
             return (X - self.lb) / (self.ub - self.lb + 1e-8)
         elif self.method == 'whiten':

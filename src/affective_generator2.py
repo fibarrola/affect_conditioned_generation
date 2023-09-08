@@ -79,6 +79,13 @@ class AffectiveGenerator:
         )
 
     @torch.no_grad()
+    def get_affect(self, prompt):
+        tokens = clip.tokenize([prompt]).to(device)
+        z = self.clip_model.encode_text(tokens).to(torch.float32)
+        z = self.data_handler.scaler_Z.scale(z)
+        return self.mlp(z)
+
+    @torch.no_grad()
     def initialize(
         self,
         prompts,
