@@ -11,7 +11,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 2000
 AFF_WEIGHT = 500
-FOLDER = "results/stdiff_R4"
+FOLDER = "results/stdiff_R5"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 3
 PROMPTS = [
@@ -73,10 +73,11 @@ for prompt in PROMPTS:
         [N_SAMPLES, 4, 512 // 8, 512 // 8],
         device=device,
     )
-    for chance in range(3):
-        for aff_idx in range(3):
-            for tick in range(5):
-                aff_val = mean_affects[prompt][aff_idx]-(1-0.5*tick)*dists[aff_idx]
+
+    for aff_idx in range(3):
+        for tick in range(5):
+            for correction in [-0.02, 0, 0.02]:
+                aff_val = mean_affects[prompt][aff_idx]-(1-0.5*tick)*dists[aff_idx] + correction
                 v_name = f"{aff_names[aff_idx]}_{round(100*aff_val.item())}"
 
                 print(f"Generating {prompt} with affect {v_name}...")
@@ -125,4 +126,4 @@ for prompt in PROMPTS:
                 if tick != 2:
                     print("MOD!")
                     stable_diffuser.override_zz(zz)
-                stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{chance}_{v_name}")
+                stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{v_name}")
