@@ -9,3 +9,4 @@ flake8
 opencv-python
 invisible-watermark
 diffusers
+ipywidgets
