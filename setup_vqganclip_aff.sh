@@ -7,3 +7,7 @@ python3 setup.py install
 cd ..
 
 mkdir vqgan_model
+
+pip install imageio
+pip install stegano
+pip install imgtag

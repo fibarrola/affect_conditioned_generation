@@ -51,7 +51,7 @@ for prompt in PROMPTS:
                     prompts=prompt,
                     v=aff_vec,
                     savepath =f"{FOLDER}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
-                    seed=sample,
+                    seed=10+sample,
                     noise_0=noise_0,
                 )
                 i = 0
