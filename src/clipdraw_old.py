@@ -35,17 +35,27 @@ class CLIPAffDraw:
     def process_text(
         self,
         prompt,
-        use_affect = False,
         neg_prompt_1=None,
         neg_prompt_2=None,
         v=[0.5, 0.5, 0.5],
         aff_idx=None,
-    ):  
-        self.aff_idx = aff_idx
-        self.use_affect = use_affect
-        print("Use affect scores: ", self.use_affect)
-        if self.use_affect:
-            self.target_affect = torch.tensor(v, device=self.device, requires_grad=False)
+    ):
+        if len(v) == 1:
+            if v[0] is None:
+                self.use_aff = False
+            else:
+                self.use_aff = True
+            self.aff_idx = aff_idx
+        else:
+            self.use_aff = (
+                False if v[0] is None and v[1] is None and v[2] is None else True
+            )
+        print("Use affect scores: ", self.use_aff)
+        if self.use_aff:
+            self.target_affect = torch.matmul(
+                torch.ones((self.num_augs, 1), device=self.device),
+                torch.tensor([v], device=self.device, requires_grad=False),
+            )
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)
@@ -67,7 +77,7 @@ class CLIPAffDraw:
         )
         self.drawing.add_shapes(shapes, shape_groups, fixed=False)
 
-    def initialize_variables(self, max_width=10):
+    def initialize_variables(self, max_width=40):
         self.max_width = max_width
         self.points_vars = []
         self.stroke_width_vars = []
@@ -135,12 +145,13 @@ class CLIPAffDraw:
                     )
                     * 0.3
                 )
-        if self.use_affect:
-            if self.aff_idx is None:
+        if self.use_aff:
+            if not self.aff_idx:
                 loss_aff = F.mse_loss(
                     self.mlp(img_features.to(torch.float32)), self.target_affect
                 )
             else:
+                print("AAAAAAAAAA")
                 loss_aff = F.mse_loss(
                     self.mlp(img_features.to(torch.float32))[:, self.aff_idx],
                     self.target_affect,

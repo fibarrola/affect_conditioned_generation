@@ -11,7 +11,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 2000
 AFF_WEIGHT = 500
-FOLDER = "results/stdiff_R5"
+FOLDER = "results/stdiff_R6"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 3
 PROMPTS = [

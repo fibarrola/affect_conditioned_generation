@@ -53,9 +53,10 @@ for prompt in PROMPTS:
                 cicada = CLIPAffDraw(aff_weight=AFF_WEIGHT)
                 cicada.process_text(
                     prompt=prompt,
+                    use_affect= tick != 2,
                     neg_prompt_1="Written words.",
                     neg_prompt_2="Text",
-                    v=aff_val,
+                    v=[aff_val],
                     aff_idx=aff_idx,
                 )
                 cicada.add_random_shapes(256)
