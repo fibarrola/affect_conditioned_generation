@@ -59,7 +59,7 @@ for prompt in PROMPTS:
                     v=[aff_val],
                     aff_idx=aff_idx,
                 )
-                cicada.add_random_shapes(256)
+                cicada.add_random_shapes(512)
                 cicada.initialize_variables()
                 cicada.initialize_optimizer()
 
