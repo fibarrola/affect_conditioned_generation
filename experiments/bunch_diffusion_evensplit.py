@@ -1,4 +1,3 @@
-import pickle
 import torch
 import copy
 from src.mlp import MLP
@@ -10,7 +9,7 @@ import os
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 2000
-AFF_WEIGHT = 500
+AFF_WEIGHT = 1000
 FOLDER = "results/stdiff_even_1"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 3
@@ -46,7 +45,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.05, 0.28, 0.35, 0.5, 0.65, 0.72, 0.95]:
+        for aff_val in [0.00, 0.25, 0.33, 0.5, 0.67, 0.75, 1.00]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
@@ -69,7 +68,7 @@ for prompt in PROMPTS:
                 if channel != 0: #channel 0 has no info
                     z.requires_grad = True
 
-                    opt = torch.optim.Adam([z], lr=0.15)
+                    opt = torch.optim.Adam([z], lr=0.2)
 
                     v_0 = mlp(z_0[0, channel, :])
                     for iter in range(MAX_ITER):
