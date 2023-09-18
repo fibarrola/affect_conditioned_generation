@@ -1,0 +1,1 @@
+export PYTHONPATH="${PYTHONPATH}:/home/fibarrola/Documents/affect_conditioned/generation"
