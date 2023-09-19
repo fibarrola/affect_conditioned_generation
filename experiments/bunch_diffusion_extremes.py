@@ -5,23 +5,23 @@ from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 from src.data_handler_bert import DataHandlerBERT
 from src.utils import print_progress_bar
 import os
+import numpy as np
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-MAX_ITER = 1000
-AFF_WEIGHT = 1000
-FOLDER = "results/stdiff_even_2"
+MAX_ITER = 500
+AFF_WEIGHT = 500
+FOLDER = "results/stdiff_extreme_6"
 RECOMPUTE_MEANS = False
-N_SAMPLES = 3
+N_SAMPLES = 12
 PROMPTS = [
-    "Sea",
-    "Forest",
-    "Mountain",
-    "Grassland",
-    "Island",
-    "Beach",
-    "Desert",
-    "City",
+    "Tiger",
+    "Elephant",
+    "Lion",
+    "House on fire",
+    "Puppy",
+    "Storm",
+    "House overlooking the ocean"
 ]
            
 
@@ -41,11 +41,10 @@ for prompt in PROMPTS:
 
     start_code = torch.randn(
         [N_SAMPLES, 4, 512 // 8, 512 // 8],
-        device=device,
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.00, 0.25, 0.33, 0.5, 0.67, 0.75, 1.00]:
+        for aff_val in [0.05, 0.1, 0.5, 1.0, 1.05]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
@@ -67,27 +66,30 @@ for prompt in PROMPTS:
                     mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
 
                 z = copy.deepcopy(z_0[:, channel, :])
-                z += 0.1*torch.mean(z)*torch.rand_like(z)
 
+                if aff_val != 0.5:
+                    z += 0.01*torch.std(z)*torch.rand_like(z)
 
-                if channel != 0: #channel 0 has no info
-                    z.requires_grad = True
+                    if channel != 0: #channel 0 has no info
+                        z.requires_grad = True
 
-                    opt = torch.optim.Adam([z], lr=0.2)
+                        opt = torch.optim.Adam([z], lr=0.2)
 
-                    for iter in range(MAX_ITER):
-                        opt.zero_grad()
-                        loss = 0
-                        loss += criterion(z, z_0[:, channel, :])
-                        det_aff_val = aff_val.detach()
-                        loss += AFF_WEIGHT * criterion(
-                            mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), det_aff_val
-                        )
-                        loss.backward()
-                        opt.step()
+                        for iter in range(MAX_ITER):
+                            opt.zero_grad()
+                            loss = 0
+                            loss += criterion(z, z_0[:, channel, :])
+                            det_aff_val = aff_val.detach()
+                            loss += AFF_WEIGHT * criterion(
+                                mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), det_aff_val
+                            )
+                            loss.backward()
+                            opt.step()
 
-                    total_affect += mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].detach().item()
+                        total_affect += mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].detach().item()
                 
+                else:
+                    print("NO AFF")
 
                 with torch.no_grad():
                     zz[0, channel, :] = copy.deepcopy(z.detach())
@@ -99,6 +101,7 @@ for prompt in PROMPTS:
             zz = zz.to('cpu')
 
             stable_diffuser = StableDiffuser()
-            stable_diffuser.initialize(prompt=prompt, start_code = start_code)
-            stable_diffuser.override_zz(zz)
-            stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{v_name}")
+            for batch in range(int(np.ceil(N_SAMPLES/3))):
+                stable_diffuser.initialize(prompt=prompt, start_code = start_code[3*batch:3*(batch+1),:,:,:])
+                stable_diffuser.override_zz(zz)
+                stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{v_name}", batch_n=batch)
