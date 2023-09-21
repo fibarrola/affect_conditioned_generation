@@ -12,7 +12,7 @@ MAX_ITER = 1000
 AFF_WEIGHT = 1000
 FOLDER = "results/stdiff_even_2"
 RECOMPUTE_MEANS = False
-N_SAMPLES = 3
+N_SAMPLES = 12
 PROMPTS = [
     "Sea",
     "Forest",
