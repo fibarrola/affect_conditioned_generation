@@ -15,13 +15,13 @@ FOLDER = "results/stdiff_even_7"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 PROMPTS = [
-    "Sea",
-    "Forest",
-    "Mountain",
+    # "Sea",
+    # "Forest",
+    # "Mountain",
     "Grassland",
-    "Island",
-    "Beach",
-    "Desert",
+    # "Island",
+    # "Beach",
+    # "Desert",
     "City",
 ]
            
@@ -35,7 +35,7 @@ data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 for noise in [0.01, 0.033]:
     for prompt in PROMPTS:
 
-        folder = f"results/stdiff_even_D_{int(100000*noise)}/{prompt.replace(' ','_')}"
+        folder = f"results/stdiff_even_E_{int(100000*noise)}/{prompt.replace(' ','_')}"
         os.makedirs(folder, exist_ok=True)
 
         z_0 = data_handler.model.get_learned_conditioning([prompt])
@@ -47,7 +47,8 @@ for noise in [0.01, 0.033]:
         )
 
         for aff_idx in range(3):
-            for aff_val in [n/10 for n in range(11)]+[None]:
+            for aff_val in [0.1, 0.5, 0.9]:
+            # for aff_val in [n/10 for n in range(11)]+[None]:
                 v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}" if not aff_val is None else "no_aff"
                 aff_val = torch.tensor(aff_val, device=device, requires_grad=False) if not aff_val is None else None
 
