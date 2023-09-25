@@ -7,14 +7,14 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 800
 AFF_WEIGHT = 7
-FOLDER = "results/vqgan_gran"
+FOLDER = "results/vqgan_gran2"
 N_SAMPLES = 3
 PROMPTS = [
-    "Sea",
-    "Forest",
-    "Mountain",
-    "Grassland",
-    "Island",
+    # "Sea",
+    # "Forest",
+    # "Mountain",
+    # "Grassland",
+    # "Island",
     "Beach",
     "Desert",
     "City",
