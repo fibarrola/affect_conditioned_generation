@@ -55,7 +55,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.00, 0.55, 1.1]:
+        for aff_val in [0.00, 0.5, 1]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
@@ -64,7 +64,7 @@ for prompt in PROMPTS:
             zz = torch.zeros_like(z_0)
             total_affect = 0
             
-            for channel in range(77):
+            for channel in range(1, 77):
                 aff_val.requires_grad = False
                 aff_val = aff_val.detach()
                 print_progress_bar(channel+1, 77, channel+1, suffix= "-- Channel:")
