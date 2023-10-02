@@ -24,7 +24,7 @@ parser.add_argument(
     "--use_sigmoid",
     type=bool,
     help="Use sigmoid at the end of last layer?",
-    default=False,
+    default=True,
 )
 config = parser.parse_args()
 layer_dims = [int(x) for x in config.layer_dims.split('|')]
@@ -39,7 +39,7 @@ loss_hist = [[] for x in range(77)]
 for channel in range(77):
     print(f"----- Training channel {channel} -----")
     path = f"data/bert_nets/data_ch_{channel}.pkl"
-    data_handler.preprocess(savepath=path,scaling="uniform")
+    data_handler.preprocess(savepath=path, z_scaling="none", v_scaling="uniform")
     data_handler.load_data(savepath=path)
     data_handler.build_datasets()
     
@@ -70,11 +70,11 @@ for channel in range(77):
             mlp.eval()  # prep model for evaluation
             for data, label, sds in data_handler.test_loader:
                 output = mlp(data)
-                label = data_handler.scaler_V.unscale(label)
-                output = data_handler.scaler_V.unscale(output)
+                # label = data_handler.scaler_V.unscale(label)
+                # output = data_handler.scaler_V.unscale(output)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
-                l1_loss_txt += torch.sum(torch.abs(output - label) / 8.6).item()
+                l1_loss_txt += torch.sum(torch.abs(output - label)).item()
 
             train_loss = train_loss / len(data_handler.train_loader.sampler)
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)

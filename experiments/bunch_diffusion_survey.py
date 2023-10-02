@@ -55,7 +55,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.00, 0.5, 1]:
+        for aff_val in [0.00, 0.5, 0.95]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 

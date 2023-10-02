@@ -40,7 +40,7 @@ class DataHandlerBERT:
         )
 
     @torch.no_grad()
-    def preprocess(self, savepath, word_type=None, scaling='none', word_batch_size=2048, channel=9):
+    def preprocess(self, savepath, word_type=None, z_scaling='none', v_scaling='none', word_batch_size=2048, channel=9):
         torch.cuda.empty_cache()
         fil_df = self.df[self.df["Type"] == word_type] if word_type else self.df
         self.words = list(fil_df["Word"])
@@ -71,7 +71,8 @@ class DataHandlerBERT:
             "Z": Z,
             "V": V,
             "Vsd": Vsd,
-            "scaling": scaling
+            "z_scaling": z_scaling,
+            "v_scaling": v_scaling,
         }
         with open(savepath, 'wb') as f:
             pickle.dump(data, f)    
@@ -83,8 +84,8 @@ class DataHandlerBERT:
         self.Z = data["Z"]
         self.V = data["V"]
         self.Vsd = data ["Vsd"]
-        self.scaler_Z = Scaler(self.Z, data["scaling"])
-        self.scaler_V = Scaler(self.V, data["scaling"])
+        self.scaler_Z = Scaler(self.Z, data["z_scaling"])
+        self.scaler_V = Scaler(self.V, data["v_scaling"])
 
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):
