@@ -13,7 +13,7 @@ parser.add_argument(
     default="uniform",
     help="scaling for input and output data. Can be 'uniform', 'whiten', 'normalize' or 'none'",
 )
-parser.add_argument("--lr", type=float, help="learning rate", default=0.00007)
+parser.add_argument("--lr", type=float, help="learning rate", default=0.0001)
 parser.add_argument(
     "--layer_dims", type=str, help="layer dimensions. Separate with |", default="64|32"
 )
@@ -24,7 +24,7 @@ parser.add_argument(
     "--use_sigmoid",
     type=bool,
     help="Use sigmoid at the end of last layer?",
-    default=False,
+    default=True,
 )
 config = parser.parse_args()
 layer_dims = [int(x) for x in config.layer_dims.split('|')]
@@ -34,11 +34,15 @@ data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 channel_losses = [0 for x in range(77)]
 loss_hist = [[] for x in range(77)]
 
-for channel in range(1, 77):
+
+
+for channel in range(77):
     print(f"----- Training channel {channel} -----")
     path = f"data/bert_nets/data_ch_{channel}.pkl"
+    data_handler.preprocess(savepath=path, z_scaling="none", v_scaling="uniform")
     data_handler.load_data(savepath=path)
     data_handler.build_datasets()
+    
 
     mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to(
         'cuda:0'
@@ -66,11 +70,13 @@ for channel in range(1, 77):
             mlp.eval()  # prep model for evaluation
             for data, label, sds in data_handler.test_loader:
                 output = mlp(data)
-                label = data_handler.scaler_V.unscale(label)
-                output = data_handler.scaler_V.unscale(output)
+                # print(output, label)
+                # assert False
+                # label = data_handler.scaler_V.unscale(label)
+                # output = data_handler.scaler_V.unscale(output)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
-                l1_loss_txt += torch.sum(torch.abs(output - label) / 8.6).item()
+                l1_loss_txt += torch.sum(torch.abs(output - label)).item()
 
             train_loss = train_loss / len(data_handler.train_loader.sampler)
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)
