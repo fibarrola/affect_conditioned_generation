@@ -84,8 +84,8 @@ class DataHandlerBERT:
         self.Z = data["Z"]
         self.V = data["V"]
         self.Vsd = data ["Vsd"]
-        self.scaler_Z = Scaler(self.Z, data["z_scaling"])
-        self.scaler_V = Scaler(self.V, data["v_scaling"])
+        self.scaler_Z = Scaler(self.Z, method = data["z_scaling"])
+        self.scaler_V = Scaler(self.V, method = data["v_scaling"])
 
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):

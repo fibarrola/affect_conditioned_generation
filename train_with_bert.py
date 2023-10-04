@@ -13,7 +13,7 @@ parser.add_argument(
     default="uniform",
     help="scaling for input and output data. Can be 'uniform', 'whiten', 'normalize' or 'none'",
 )
-parser.add_argument("--lr", type=float, help="learning rate", default=0.00007)
+parser.add_argument("--lr", type=float, help="learning rate", default=0.0001)
 parser.add_argument(
     "--layer_dims", type=str, help="layer dimensions. Separate with |", default="64|32"
 )
@@ -70,6 +70,8 @@ for channel in range(77):
             mlp.eval()  # prep model for evaluation
             for data, label, sds in data_handler.test_loader:
                 output = mlp(data)
+                # print(output, label)
+                # assert False
                 # label = data_handler.scaler_V.unscale(label)
                 # output = data_handler.scaler_V.unscale(output)
                 loss = criterion(output, label)

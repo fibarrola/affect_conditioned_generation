@@ -10,8 +10,8 @@ import numpy as np
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
-AFF_WEIGHT = 500
-FOLDER = "results/stdiff_survey3"
+AFF_WEIGHT = 50
+FOLDER = "results/stdiff_survey4"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 PROMPTS = [
@@ -61,6 +61,7 @@ for prompt in PROMPTS:
 
             print(f"Generating {prompt} with affect {v_name}...")
 
+
             zz = torch.zeros_like(z_0)
             total_affect = 0
             
@@ -84,7 +85,7 @@ for prompt in PROMPTS:
                     if channel != 0: #channel 0 has no info
                         z.requires_grad = True
 
-                        opt = torch.optim.Adam([z], lr=0.2)
+                        opt = torch.optim.Adam([z], lr=0.1)
 
                         for iter in range(MAX_ITER):
                             opt.zero_grad()
