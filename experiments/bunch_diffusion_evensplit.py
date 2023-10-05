@@ -66,7 +66,7 @@ for noise in [0.01, 0.033]:
                         z += noise*torch.std(z)*torch.rand_like(z)
 
                         with torch.no_grad():
-                            mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+                            mlp = MLP(param_env="mlp.env", h0=768).to(device)
                             mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))                   
 
                         if channel != 0: #channel 0 has no info

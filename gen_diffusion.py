@@ -37,7 +37,7 @@ target_v = torch.tensor(
 )
 print(target_dims)
 
-mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+mlp = MLP(param_env="mlp.env", h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
 
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")

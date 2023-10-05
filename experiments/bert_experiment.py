@@ -43,7 +43,7 @@ fig.show()
 
 
 
-#     mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+#     mlp = MLP(param_env="mlp.env", h0=768).to(device)
 #     criterion = torch.nn.MSELoss(reduction='mean')
 
 #     z_0 = data_handler.model.get_learned_conditioning([prompt])

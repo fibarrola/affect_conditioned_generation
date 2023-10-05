@@ -36,7 +36,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 with open(f'data/bert_nets/data_handler_bert_{0}.pkl', 'rb') as f:
     data_handler = pickle.load(f)
 
-mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+mlp = MLP(param_env="mlp.env", h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
 mean_error = torch.nn.L1Loss(reduction='mean')
 

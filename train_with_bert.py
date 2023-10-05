@@ -39,7 +39,7 @@ loss_hist = [[] for x in range(77)]
 for channel in range(77):
     print(f"----- Training channel {channel} -----")
     path = f"data/bert_nets/data_ch_{channel}.pkl"
-    data_handler.preprocess(savepath=path, z_scaling="none", v_scaling="uniform")
+    data_handler.preprocess(savepath=path, z_scaling="none", v_scaling="none")
     data_handler.load_data(savepath=path)
     data_handler.build_datasets()
     
@@ -70,8 +70,8 @@ for channel in range(77):
             mlp.eval()  # prep model for evaluation
             for data, label, sds in data_handler.test_loader:
                 output = mlp(data)
-                # print(output, label)
-                # assert False
+                print(output, label)
+                assert False
                 # label = data_handler.scaler_V.unscale(label)
                 # output = data_handler.scaler_V.unscale(output)
                 loss = criterion(output, label)
