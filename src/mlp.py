@@ -12,8 +12,11 @@ class MLP(nn.Module):
         super(MLP, self).__init__()
         assert len(hh) >= 1
         load_dotenv(param_env)
+        # print(os.environ.get("HF"))
+        # print(os.environ.get("USE_DROPOUT"))
+        # print(os.environ.get("USE_SIGMOID"))
         self.num_lay = len(hh) + 1
-        hh = [h0] + hh + [os.environ.get("HF")]
+        hh = [h0] + hh + [int(os.environ.get("HF"))]
         self.fc1 = nn.Linear(hh[0], hh[1])
         self.fc2 = nn.Linear(hh[1], hh[2])
         if self.num_lay >= 3:

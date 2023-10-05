@@ -17,11 +17,16 @@ PROMPTS = [
     "Sea",
     "Forest",
     "Mountain",
-    "Grassland",
+    # "Grassland",
     "Island",
     "Beach",
-    "Desert",
+    # "Desert",
     "City",
+    "Lake",
+    "River",
+    "University",
+    "Castle",
+    "Shopping Mall"
 ]
            
 
