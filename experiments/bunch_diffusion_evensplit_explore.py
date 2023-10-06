@@ -17,11 +17,16 @@ PROMPTS = [
     "Sea",
     "Forest",
     "Mountain",
-    "Grassland",
+    # "Grassland",
     "Island",
     "Beach",
-    "Desert",
+    # "Desert",
     "City",
+    "Lake",
+    "River",
+    "University",
+    "Castle",
+    "Shopping Mall"
 ]
            
 
@@ -63,7 +68,7 @@ for prompt in PROMPTS:
                 data_handler.load_data(savepath=path)
 
                 with torch.no_grad():
-                    mlp = MLP([64, 32], do=True, sig=False, h0=768).to(device)
+                    mlp = MLP(param_env="mlp.env", h0=768).to(device)
                     mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
 
                 z = copy.deepcopy(z_0[:, channel, :])

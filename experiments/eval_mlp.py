@@ -34,7 +34,7 @@ with open('data/data_handler_mixed.pkl', 'rb') as f:
     data_handler = pickle.load(f)
 
 with torch.no_grad():
-    mlp = MLP([64, 32]).to('cuda:0')
+    mlp = MLP(param_env="mlp.env").to('cuda:0')
     mlp.load_state_dict(torch.load('data/model_mixed.pt'))
     clip_model, preprocess = clip.load('ViT-B/32', device, jit=False)
 

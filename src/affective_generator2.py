@@ -33,7 +33,7 @@ class AffectiveGenerator:
         im_size=[480, 480],
         cutn=64,
     ):
-        self.mlp = MLP([64, 32]).to('cuda:0')
+        self.mlp = MLP(param_env="mlp.env").to('cuda:0')
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
         with open('data/data_handler_mixed.pkl', 'rb') as f:
             self.data_handler = pickle.load(f)

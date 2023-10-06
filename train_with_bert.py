@@ -6,28 +6,15 @@ import argparse
 
 
 parser = argparse.ArgumentParser(description='Training Parameters')
-parser.add_argument("--num_epochs", type=int, default=2500)
+parser.add_argument("--num_epochs", type=int, default=500)
 parser.add_argument(
     "--scaling",
     type=str,
     default="uniform",
     help="scaling for input and output data. Can be 'uniform', 'whiten', 'normalize' or 'none'",
 )
-parser.add_argument("--lr", type=float, help="learning rate", default=0.0001)
-parser.add_argument(
-    "--layer_dims", type=str, help="layer dimensions. Separate with |", default="64|32"
-)
-parser.add_argument(
-    "--use_dropout", type=bool, help="Use dropout for training?", default=True
-)
-parser.add_argument(
-    "--use_sigmoid",
-    type=bool,
-    help="Use sigmoid at the end of last layer?",
-    default=True,
-)
+parser.add_argument("--lr", type=float, help="learning rate", default=0.00005)
 config = parser.parse_args()
-layer_dims = [int(x) for x in config.layer_dims.split('|')]
 criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
 
@@ -44,9 +31,7 @@ for channel in range(77):
     data_handler.build_datasets()
     
 
-    mlp = MLP(layer_dims, do=config.use_dropout, sig=config.use_sigmoid, h0=768).to(
-        'cuda:0'
-    )
+    mlp = MLP(param_env="mlp.env", h0=768).to('cuda:0')
     optimizer = torch.optim.Adam(mlp.parameters(), lr=config.lr)
 
     valid_loss_min = 1e8
