@@ -2,23 +2,34 @@ import torch
 import copy
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
-from src.data_handler_bert import DataHandlerBERT
+from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
 from src.utils import print_progress_bar
+from omegaconf import OmegaConf
 import os
 import numpy as np
+from dotenv import load_dotenv
+
+param_env = "bert.env"
+
+load_dotenv(param_env)
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
-AFF_WEIGHT = 500
-FOLDER = "results/stdiff_survey3"
+AFF_WEIGHT = 50
+FOLDER = "results/stdiff_survey4"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 PROMPTS = [
+    "Lake",
+    "River",
+    "University",
+    "Castle",
+    "Shopping Mall",
     "City",
-    "Grassland",
+    # "Grassland",
     "Beach",
-    "Mountain"
+    "Mountain",
     # "Tiger",
     # "Elephant",
     # "Lion",
@@ -34,20 +45,22 @@ PROMPTS = [
     # "Spider",
     # "Wasp"
 ]
-           
+
+config = OmegaConf.load(os.environ.get("SD_CONFIG"))
+model = load_model_from_config(config,os.environ.get("SD_MODEL"))       
 
 # MAIN starts here
 aff_names = ["V", "A", "D"]
 
 criterion = torch.nn.MSELoss(reduction='mean')
 
-data_handler = DataHandlerBERT("data/Ratings_Warriner_et_al.csv")
+data_handler = DataHandlerBERT()
 for prompt in PROMPTS:
 
     folder = f"{FOLDER}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
-    z_0 = data_handler.model.get_learned_conditioning([prompt])
+    z_0 = model.get_learned_conditioning([prompt])
     z_0.requires_grad = False
 
     start_code = torch.randn(
@@ -55,7 +68,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.1, 0.5, 0.9]:
+        for aff_val in [0., 0.5, 1.]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
@@ -64,43 +77,42 @@ for prompt in PROMPTS:
             zz = torch.zeros_like(z_0)
             total_affect = 0
             
-            for channel in range(1, 77):
+            for channel in range(77): #channel 0 has no info
                 aff_val.requires_grad = False
                 aff_val = aff_val.detach()
                 print_progress_bar(channel+1, 77, channel+1, suffix= "-- Channel:")
 
-                path = f"data/bert_nets/data_ch_{channel}.pkl"
-                data_handler.load_data(savepath=path)
-
-                with torch.no_grad():
-                    mlp = MLP(param_env="mlp.env", h0=768).to(device)
-                    mlp.load_state_dict(torch.load(f'data/bert_nets/model_ch_{channel}.pt'))
+                path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
 
                 z = copy.deepcopy(z_0[:, channel, :])
 
-                if True: #aff_val != 0.5:
+                if channel != 0:
+
+                    with torch.no_grad():
+                        mlp = MLP(
+                            h0=int(os.environ.get('IMG_SIZE')),
+                            use_dropout=os.environ.get('USE_DROPOUT'),
+                            use_sigmoid=os.environ.get('USE_SIGMOID'),
+                        ).to('cuda:0')
+                        mlp.load_state_dict(torch.load(f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"))
+                 
                     z += 0.01*torch.std(z)*torch.rand_like(z)
+                    z.requires_grad = True
 
-                    if channel != 0: #channel 0 has no info
-                        z.requires_grad = True
+                    opt = torch.optim.Adam([z], lr=0.2)
 
-                        opt = torch.optim.Adam([z], lr=0.2)
+                    for iter in range(MAX_ITER):
+                        opt.zero_grad()
+                        loss = 0
+                        loss += criterion(z, z_0[:, channel, :])
+                        det_aff_val = aff_val.detach()
+                        loss += AFF_WEIGHT * criterion(
+                            mlp(z)[:, aff_idx].unsqueeze(0), det_aff_val
+                        )
+                        loss.backward()
+                        opt.step()
 
-                        for iter in range(MAX_ITER):
-                            opt.zero_grad()
-                            loss = 0
-                            loss += criterion(z, z_0[:, channel, :])
-                            det_aff_val = aff_val.detach()
-                            loss += AFF_WEIGHT * criterion(
-                                mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].unsqueeze(0), det_aff_val
-                            )
-                            loss.backward()
-                            opt.step()
-
-                        total_affect += mlp(data_handler.scaler_Z.scale(z))[:, aff_idx].detach().item()
-                
-                else:
-                    print("NO AFF")
+                    total_affect += mlp(z)[:, aff_idx].detach().item()
 
                 with torch.no_grad():
                     zz[0, channel, :] = copy.deepcopy(z.detach())

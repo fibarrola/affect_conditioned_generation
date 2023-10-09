@@ -1,30 +1,24 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-import os
-from dotenv import load_dotenv
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 class MLP(nn.Module):
-    def __init__(self, param_env, hh=[64, 32], h0=512):
+    def __init__(self, hh=[64, 32], h0=512, hf=3, use_dropout=True, use_sigmoid=False):
         super(MLP, self).__init__()
         assert len(hh) >= 1
-        load_dotenv(param_env)
-        # print(os.environ.get("HF"))
-        # print(os.environ.get("USE_DROPOUT"))
-        # print(os.environ.get("USE_SIGMOID"))
         self.num_lay = len(hh) + 1
-        hh = [h0] + hh + [int(os.environ.get("HF"))]
+        hh = [h0] + hh + [hf]
         self.fc1 = nn.Linear(hh[0], hh[1])
         self.fc2 = nn.Linear(hh[1], hh[2])
         if self.num_lay >= 3:
             self.fc3 = nn.Linear(hh[2], hh[3])
         if self.num_lay >= 4:
             self.fc4 = nn.Linear(hh[3], hh[4])
-        self.do = os.environ.get("USE_DROPOUT")
-        self.sig = os.environ.get("USE_SIGMOID")
+        self.do = use_dropout
+        self.sig = use_sigmoid
         if self.do:
             self.drop = nn.Dropout(p=0.2)
 
