@@ -29,7 +29,7 @@ for channel in range(77):
     data_handler.build_datasets()
 
     mlp = MLP(
-        h0=os.environ.get('IMAGE_SIZE'),
+        h0=int(os.environ.get('IMG_SIZE')),
         use_dropout=os.environ.get('USE_DROPOUT'),
         use_sigmoid=os.environ.get('USE_SIGMOID'),
     ).to('cuda:0')
@@ -44,7 +44,7 @@ for channel in range(77):
         l1_loss_txt = 0
 
         mlp.train()  # prep model for training
-        for data, label, _ in data_handler.train_loader:
+        for data, label in data_handler.train_loader:
             optimizer.zero_grad()
             output = mlp(data, train=True)
             loss = criterion(output, label)
@@ -54,7 +54,7 @@ for channel in range(77):
 
         with torch.no_grad():
             mlp.eval()  # prep model for evaluation
-            for data, label, sds in data_handler.test_loader:
+            for data, label in data_handler.test_loader:
                 output = mlp(data)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
@@ -64,7 +64,7 @@ for channel in range(77):
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)
             l1_loss_txt = l1_loss_txt / (3 * len(data_handler.test_loader.sampler))
 
-            if (epoch + 1) % 100 == 0:
+            if (epoch) % 50 == 0:
                 print(
                     'Epoch: {} \tTrain Loss: {:.3f} \tVal Loss: {:.3f} \ttxt Loss: {:.3f}'.format(
                         epoch + 1, train_loss, valid_loss, l1_loss_txt
