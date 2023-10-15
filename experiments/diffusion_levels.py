@@ -20,6 +20,7 @@ AFF_WEIGHT = 500
 FOLDER = "results/stdiff_survey9"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
+AFFECT_VALS = [0.,0.25, 0.5, 0.75, 1.]
 PROMPTS = [
     "Forest",
     "Sea",
@@ -70,7 +71,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0.,0.25, 0.5, 0.75, 1.]:
+        for aff_val in AFFECT_VALS:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
