@@ -16,34 +16,36 @@ load_dotenv(param_env)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
-AFF_WEIGHT = 50
-FOLDER = "results/stdiff_survey4"
+AFF_WEIGHT = 500
+FOLDER = "results/stdiff_survey9"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 PROMPTS = [
+    "Forest",
+    "Sea",
     "Lake",
     "River",
     "University",
     "Castle",
     "Shopping Mall",
     "City",
-    # "Grassland",
+    "Grassland",
     "Beach",
     "Mountain",
-    # "Tiger",
-    # "Elephant",
-    # "Lion",
-    # "House on fire",
-    # "Puppy",
-    # "Storm",
-    # "House overlooking the ocean",
-    # "Puppy",
-    # "Tiger",
-    # "Elephant",
-    # "Crocodile",
-    # "Snake",
-    # "Spider",
-    # "Wasp"
+    "Tiger",
+    "Elephant",
+    "Lion",
+    "House on fire",
+    "Puppy",
+    "Storm",
+    "House overlooking the ocean",
+    "Puppy",
+    "Tiger",
+    "Elephant",
+    "Crocodile",
+    "Snake",
+    "Spider",
+    "Wasp"
 ]
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
@@ -68,7 +70,7 @@ for prompt in PROMPTS:
     )
 
     for aff_idx in range(3):
-        for aff_val in [0., 0.5, 1.]:
+        for aff_val in [0.,0.25, 0.5, 0.75, 1.]:
             v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
             aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
