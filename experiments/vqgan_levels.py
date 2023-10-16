@@ -9,6 +9,7 @@ MAX_ITER = 800
 AFF_WEIGHT = 7
 FOLDER = "results/vqgan_survey4"
 N_SAMPLES = 3
+AFFECT_VALS = [0.,0.25, 0.5, 0.75, 1.]
 PROMPTS = [
     "Storm"
     # "Sea",
@@ -48,7 +49,7 @@ for prompt in PROMPTS:
         dists = torch.min(0.95*torch.ones((3), device=device)-default_affect, default_affect-0.05*torch.ones((3), device=device))
         for aff_idx in range(3):
             print(f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}...")
-            for aff_val in []:
+            for aff_val in AFFECT_VALS:
                 aff_name = str(round(100*aff_val)) if aff_val is not None else "noaff"
                 v_name = f"{aff_names[aff_idx]}_{aff_name}"
                 print(f"Generating {prompt} with affect {v_name}...")
