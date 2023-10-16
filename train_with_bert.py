@@ -73,7 +73,10 @@ for channel in range(77):
 
             # save model
             if valid_loss <= valid_loss_min:
-                torch.save(mlp.state_dict(), f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt")
+                torch.save(
+                    mlp.state_dict(),
+                    f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt",
+                )
                 valid_loss_min = valid_loss
                 loss_hist[channel].append(valid_loss)
 

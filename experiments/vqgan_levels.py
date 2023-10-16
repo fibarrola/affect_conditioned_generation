@@ -5,11 +5,14 @@ from tqdm.notebook import tqdm
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-MAX_ITER = 800
+MAX_ITER = 500
 AFF_WEIGHT = 7
-FOLDER = "results/vqgan_survey"
+FOLDER = "results/vqgan_survey5"
 N_SAMPLES = 3
+# AFFECT_VALS = [0.,0.25, 0.5, 0.75, 1.]
+AFFECT_VALS = [0, 0.5, 1.0]
 PROMPTS = [
+    "a Storm"
     # "Sea",
     # "Forest",
     # "Mountain",
@@ -18,14 +21,14 @@ PROMPTS = [
     # "Beach",
     # "Desert",
     # "City",
-    "Puppy",
-    "Tiger",
-    "Elephant",
-    "Crocodile",
-    "Snake",
-    "Spider",
-    "Wasp"
-]          
+    # "Puppy",
+    # "Tiger",
+    # "Elephant",
+    # "Crocodile",
+    # "Snake",
+    # "Spider",
+    # "Wasp"
+]
 
 # MAIN starts here
 aff_names = ["V", "A", "D"]
@@ -44,11 +47,16 @@ for prompt in PROMPTS:
             device=device,
         )
         default_affect = affective_generator.get_affect(prompt)[0]
-        dists = torch.min(0.95*torch.ones((3), device=device)-default_affect, default_affect-0.05*torch.ones((3), device=device))
-        for aff_idx in range(3):
-            print(f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}...")
-            for aff_val in [0.1, 0.5, 0.9]:
-                aff_name = str(round(100*aff_val)) if aff_val is not None else "noaff"
+        dists = torch.min(
+            0.95 * torch.ones((3), device=device) - default_affect,
+            default_affect - 0.05 * torch.ones((3), device=device),
+        )
+        for aff_idx in [1]:  # range(3):
+            print(
+                f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}..."
+            )
+            for aff_val in AFFECT_VALS:
+                aff_name = str(round(100 * aff_val)) if aff_val is not None else "noaff"
                 v_name = f"{aff_names[aff_idx]}_{aff_name}"
                 print(f"Generating {prompt} with affect {v_name}...")
                 aff_vec = [None, None, None]
@@ -57,8 +65,8 @@ for prompt in PROMPTS:
                 affective_generator.initialize(
                     prompts=prompt,
                     v=aff_vec,
-                    savepath =f"{FOLDER}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
-                    seed=10+sample,
+                    savepath=f"{FOLDER}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
+                    seed=sample,
                     noise_0=noise_0,
                 )
                 i = 0
@@ -69,4 +77,3 @@ for prompt in PROMPTS:
                             break
                         i += 1
                         pbar.update()
-
