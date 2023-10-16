@@ -3,7 +3,7 @@ import copy
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
-from src.utils import print_progress_bar
+from src.utils import print_progress_bar, checked_path
 from omegaconf import OmegaConf
 import os
 import numpy as np
@@ -17,7 +17,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 500
-FOLDER = "results/stdiff_survey9"
+FOLDER = "results/stdiff_survey0"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
@@ -60,7 +60,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT()
 for prompt in PROMPTS:
 
-    folder = f"{FOLDER}/{prompt.replace(' ','_')}"
+    folder = f"{checked_path(FOLDER)}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
     z_0 = model.get_learned_conditioning([prompt])
