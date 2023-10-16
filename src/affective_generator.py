@@ -91,7 +91,7 @@ class AffectiveGenerator:
         noise_prompt_weights=[],
         outdir='results',
         noise_0=[],
-        savepath=None
+        savepath=None,
     ):
 
         # avoid overwriting

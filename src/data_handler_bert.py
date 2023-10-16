@@ -75,17 +75,17 @@ class DataHandlerBERT:
             "v_scaling": v_scaling,
         }
         with open(savepath, 'wb') as f:
-            pickle.dump(data, f)    
-    
+            pickle.dump(data, f)
+
     @torch.no_grad()
     def load_data(self, savepath):
         with open(savepath, 'rb') as f:
             data = pickle.load(f)
         self.Z = data["Z"]
         self.V = data["V"]
-        self.Vsd = data ["Vsd"]
-        self.scaler_Z = Scaler(self.Z, method = data["z_scaling"])
-        self.scaler_V = Scaler(self.V, method = data["v_scaling"])
+        self.Vsd = data["Vsd"]
+        self.scaler_Z = Scaler(self.Z, method=data["z_scaling"])
+        self.scaler_V = Scaler(self.V, method=data["v_scaling"])
 
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):

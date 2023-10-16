@@ -35,17 +35,19 @@ class CLIPAffDraw:
     def process_text(
         self,
         prompt,
-        use_affect = False,
+        use_affect=False,
         neg_prompt_1=None,
         neg_prompt_2=None,
         v=[0.5, 0.5, 0.5],
         aff_idx=None,
-    ):  
+    ):
         self.aff_idx = aff_idx
         self.use_affect = use_affect
         print("Use affect scores: ", self.use_affect)
         if self.use_affect:
-            self.target_affect = torch.tensor(v, device=self.device, requires_grad=False)
+            self.target_affect = torch.tensor(
+                v, device=self.device, requires_grad=False
+            )
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)

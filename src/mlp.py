@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
+
 class MLP(nn.Module):
     def __init__(self, hh=[64, 32], h0=512, hf=3, use_dropout=True, use_sigmoid=False):
         super(MLP, self).__init__()

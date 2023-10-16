@@ -1,4 +1,3 @@
-import pickle
 import torch
 import copy
 import argparse
@@ -46,7 +45,7 @@ z_0.requires_grad = False
 
 zz = torch.zeros_like(z_0)
 for channel in range(77):
-    print_progress_bar(channel+1, 77, channel, suffix= "-- Channel:")
+    print_progress_bar(channel + 1, 77, channel, suffix="-- Channel:")
 
     path = f"data/bert_nets/data_ch_{channel}.pkl"
     data_handler.load_data(savepath=path)
@@ -56,7 +55,7 @@ for channel in range(77):
 
     z = copy.deepcopy(z_0[:, channel, :])
 
-    if channel != 0: #channel 0 has no info
+    if channel != 0:  # channel 0 has no info
         z.requires_grad = True
 
         opt = torch.optim.Adam([z], lr=0.1)
@@ -69,7 +68,8 @@ for channel in range(77):
                 loss += criterion(z, z_0[:, channel, :])
                 for dim in target_dims:
                     loss += args.reg * criterion(
-                        mlp(data_handler.scaler_Z.scale(z))[:, dim], target_v[dim:dim+1]
+                        mlp(data_handler.scaler_Z.scale(z))[:, dim],
+                        target_v[dim : dim + 1],
                     )
                 loss.backward()
                 opt.step()

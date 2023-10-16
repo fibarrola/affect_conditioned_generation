@@ -20,7 +20,7 @@ AFF_WEIGHT = 500
 FOLDER = "results/stdiff_survey9"
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
-AFFECT_VALS = [0.,0.25, 0.5, 0.75, 1.]
+AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
 PROMPTS = [
     "Forest",
     "Sea",
@@ -46,11 +46,11 @@ PROMPTS = [
     "Crocodile",
     "Snake",
     "Spider",
-    "Wasp"
+    "Wasp",
 ]
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
-model = load_model_from_config(config,os.environ.get("SD_MODEL"))       
+model = load_model_from_config(config, os.environ.get("SD_MODEL"))
 
 # MAIN starts here
 aff_names = ["V", "A", "D"]
@@ -66,9 +66,7 @@ for prompt in PROMPTS:
     z_0 = model.get_learned_conditioning([prompt])
     z_0.requires_grad = False
 
-    start_code = torch.randn(
-        [N_SAMPLES, 4, 512 // 8, 512 // 8],
-    )
+    start_code = torch.randn([N_SAMPLES, 4, 512 // 8, 512 // 8],)
 
     for aff_idx in range(3):
         for aff_val in AFFECT_VALS:
@@ -79,11 +77,11 @@ for prompt in PROMPTS:
 
             zz = torch.zeros_like(z_0)
             total_affect = 0
-            
-            for channel in range(77): #channel 0 has no info
+
+            for channel in range(77):  # channel 0 has no info
                 aff_val.requires_grad = False
                 aff_val = aff_val.detach()
-                print_progress_bar(channel+1, 77, channel+1, suffix= "-- Channel:")
+                print_progress_bar(channel + 1, 77, channel + 1, suffix="-- Channel:")
 
                 path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
 
@@ -97,9 +95,13 @@ for prompt in PROMPTS:
                             use_dropout=os.environ.get('USE_DROPOUT'),
                             use_sigmoid=os.environ.get('USE_SIGMOID'),
                         ).to('cuda:0')
-                        mlp.load_state_dict(torch.load(f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"))
-                 
-                    z += 0.01*torch.std(z)*torch.rand_like(z)
+                        mlp.load_state_dict(
+                            torch.load(
+                                f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"
+                            )
+                        )
+
+                    z += 0.01 * torch.std(z) * torch.rand_like(z)
                     z.requires_grad = True
 
                     opt = torch.optim.Adam([z], lr=0.2)
@@ -119,15 +121,20 @@ for prompt in PROMPTS:
 
                 with torch.no_grad():
                     zz[0, channel, :] = copy.deepcopy(z.detach())
-                
+
                 torch.cuda.empty_cache()
-            
+
             print(f"Mean Aff = {total_affect/76}, Target: {aff_val.item()}")
 
             zz = zz.to('cpu')
 
             stable_diffuser = StableDiffuser()
-            for batch in range(int(np.ceil(N_SAMPLES/3))):
-                stable_diffuser.initialize(prompt=prompt, start_code = start_code[3*batch:3*(batch+1),:,:,:])
+            for batch in range(int(np.ceil(N_SAMPLES / 3))):
+                stable_diffuser.initialize(
+                    prompt=prompt,
+                    start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
+                )
                 stable_diffuser.override_zz(zz)
-                stable_diffuser.run_diffusion(alt_savepath=folder, im_name = f"_{v_name}", batch_n=batch)
+                stable_diffuser.run_diffusion(
+                    alt_savepath=folder, im_name=f"_{v_name}", batch_n=batch
+                )

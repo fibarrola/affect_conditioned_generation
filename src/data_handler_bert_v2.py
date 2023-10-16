@@ -1,6 +1,5 @@
 import torch
 import pandas as pd
-from src.scaler import Scaler
 from torch.utils.data import random_split, TensorDataset, DataLoader
 import numpy as np
 from omegaconf import OmegaConf
@@ -31,7 +30,6 @@ def load_model_from_config(config, ckpt, verbose=False):
 class DataHandlerBERT:
     def __init__(self):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-             
 
     @torch.no_grad()
     def preprocess(self, csv_path, savepath, sdconfig, sdmodel, word_type=None, v_scaling=False, word_batch_size=2048, channel=9):
@@ -60,13 +58,13 @@ class DataHandlerBERT:
         self.V = torch.tensor(
             fil_df[dim_names].values, device=self.device, dtype=torch.float32
         )
-        
+
         if v_scaling:
             self.vmax, _ = torch.max(self.V, dim=0)
             self.vmin, _ = torch.min(self.V, dim=0)
-            self.V = (self.V-self.vmin)/(self.vmax-self.vmin+1e-9)
+            self.V = (self.V - self.vmin) / (self.vmax - self.vmin + 1e-9)
             ############# WHAAAAAAAAAAAAAAT ERASE THIIIIIIIIIIIIIIIIIISSSSSSSSSSSSSSSSSSS
-            self.V = self.V*0.8+0.1
+            self.V = self.V * 0.8 + 0.1
 
         data = {
             "Z": self.Z,
@@ -75,8 +73,8 @@ class DataHandlerBERT:
             "vmin": self.vmin,
         }
         with open(savepath, 'wb') as f:
-            pickle.dump(data, f)    
-    
+            pickle.dump(data, f)
+
     @torch.no_grad()
     def load_data(self, savepath):
         with open(savepath, 'rb') as f:
