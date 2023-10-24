@@ -85,6 +85,13 @@ def checked_path(filepath, extension):
     return f"{filepath}{k}.{extension}"
 
 
+def renum_path(path):
+    k = 0
+    while os.path.exists(f"{path}_{k}"):
+        k += 1
+
+    return f"{path}_{k}"
+
 def print_progress_bar(
     iteration,
     total,

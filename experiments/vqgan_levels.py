@@ -2,17 +2,18 @@ from src.affective_generator2 import AffectiveGenerator
 import torch
 import os
 from tqdm.notebook import tqdm
-from src.utils import checked_path
+from src.utils import renum_path
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 7
-FOLDER = "results/vqgan_survey0"
+FOLDER = "results/vqgan_survey"
 N_SAMPLES = 3
-AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
+AFFECT_VALS = [0.05, 0.25, 0.5, 0.75, 0.95]
 PROMPTS = [
-    "Storm" "Sea",
+    "Storm",
+    "Sea",
     "Forest",
     "Mountain",
     "Grassland",
@@ -22,7 +23,7 @@ PROMPTS = [
 ]
 
 # MAIN starts here
-folder = checked_path(FOLDER)
+folder = renum_path(FOLDER)
 
 aff_names = ["V", "A", "D"]
 
@@ -44,7 +45,7 @@ for prompt in PROMPTS:
             0.95 * torch.ones((3), device=device) - default_affect,
             default_affect - 0.05 * torch.ones((3), device=device),
         )
-        for aff_idx in [1]:  # range(3):
+        for aff_idx in range(3):
             print(
                 f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}..."
             )
@@ -59,7 +60,7 @@ for prompt in PROMPTS:
                     prompts=prompt,
                     v=aff_vec,
                     savepath=f"{folder}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
-                    seed=sample,
+                    seed=20+sample,
                     noise_0=noise_0,
                 )
                 i = 0
