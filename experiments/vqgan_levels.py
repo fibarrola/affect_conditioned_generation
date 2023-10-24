@@ -2,35 +2,29 @@ from src.affective_generator2 import AffectiveGenerator
 import torch
 import os
 from tqdm.notebook import tqdm
+from src.utils import renum_path
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 7
-FOLDER = "results/vqgan_survey5"
+FOLDER = "results/vqgan_survey"
 N_SAMPLES = 3
-# AFFECT_VALS = [0.,0.25, 0.5, 0.75, 1.]
-AFFECT_VALS = [0, 0.5, 1.0]
+AFFECT_VALS = [0.05, 0.25, 0.5, 0.75, 0.95]
 PROMPTS = [
-    "a Storm"
-    # "Sea",
-    # "Forest",
-    # "Mountain",
-    # "Grassland",
-    # "Island",
-    # "Beach",
-    # "Desert",
-    # "City",
-    # "Puppy",
-    # "Tiger",
-    # "Elephant",
-    # "Crocodile",
-    # "Snake",
-    # "Spider",
-    # "Wasp"
+    "Storm",
+    "Sea",
+    "Forest",
+    "Mountain",
+    "Grassland",
+    "Island",
+    "Beach",
+    "City",
 ]
 
 # MAIN starts here
+folder = renum_path(FOLDER)
+
 aff_names = ["V", "A", "D"]
 
 criterion = torch.nn.MSELoss(reduction='mean')
@@ -38,7 +32,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 affective_generator = AffectiveGenerator()
 
 for prompt in PROMPTS:
-    os.makedirs(f"{FOLDER}/{prompt.replace(' ','_')}", exist_ok=True)
+    os.makedirs(f"{folder}/{prompt.replace(' ','_')}", exist_ok=True)
 
     for sample in range(N_SAMPLES):
         noise_0 = torch.randint(
@@ -51,7 +45,7 @@ for prompt in PROMPTS:
             0.95 * torch.ones((3), device=device) - default_affect,
             default_affect - 0.05 * torch.ones((3), device=device),
         )
-        for aff_idx in [1]:  # range(3):
+        for aff_idx in range(3):
             print(
                 f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}..."
             )
@@ -65,8 +59,8 @@ for prompt in PROMPTS:
                 affective_generator.initialize(
                     prompts=prompt,
                     v=aff_vec,
-                    savepath=f"{FOLDER}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
-                    seed=sample,
+                    savepath=f"{folder}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
+                    seed=20+sample,
                     noise_0=noise_0,
                 )
                 i = 0

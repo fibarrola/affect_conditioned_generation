@@ -3,7 +3,7 @@ import copy
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
-from src.utils import print_progress_bar, checked_path
+from src.utils import print_progress_bar, renum_path
 from omegaconf import OmegaConf
 import os
 import numpy as np
@@ -17,37 +17,33 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 500
-FOLDER = "results/stdiff_survey0"
+FOLDER = renum_path("results/exploration_0")
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
-AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
+AFFECT_VALS = [0., 1.]
 PROMPTS = [
-    "Forest",
-    "Sea",
-    "Lake",
-    "River",
-    "University",
-    "Castle",
-    "Shopping Mall",
-    "City",
-    "Grassland",
-    "Beach",
-    "Mountain",
-    "Tiger",
-    "Elephant",
     "Lion",
-    "House on fire",
-    "Puppy",
-    "Storm",
-    "House overlooking the ocean",
-    "Puppy",
-    "Tiger",
     "Elephant",
-    "Crocodile",
+    "Tiger",
+    "Puppy",
     "Snake",
     "Spider",
-    "Wasp",
+    "Wasp",   
+    "House on fire",
+    "Storm",
+    "House overlooking the ocean",
+    "Crocodile",
 ]
+
+aux_prompts = [
+    "happy",
+    "unhappy",
+    "calm",
+    "excited",
+    "submissive",
+    "dominant"
+]
+
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
 model = load_model_from_config(config, os.environ.get("SD_MODEL"))
@@ -60,7 +56,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT()
 for prompt in PROMPTS:
 
-    folder = f"{checked_path(FOLDER)}/{prompt.replace(' ','_')}"
+    folder = f"{FOLDER}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
     z_0 = model.get_learned_conditioning([prompt])
@@ -138,3 +134,25 @@ for prompt in PROMPTS:
                 stable_diffuser.run_diffusion(
                     alt_savepath=folder, im_name=f"_{v_name}", batch_n=batch
                 )
+
+    stable_diffuser = StableDiffuser()
+    for batch in range(int(np.ceil(N_SAMPLES / 3))):
+        stable_diffuser.initialize(
+            prompt=prompt,
+            start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
+        )
+        stable_diffuser.run_diffusion(
+            alt_savepath=folder, im_name=f"_no_aff", batch_n=batch
+        )
+
+    
+    for aux_prompt in aux_prompts:
+
+        for batch in range(int(np.ceil(N_SAMPLES / 3))):
+            stable_diffuser.initialize(
+                prompt=f"{prompt} that makes me feel very {aux_prompt}",
+                start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
+            )
+            stable_diffuser.run_diffusion(
+                alt_savepath=folder, im_name=f"_{aux_prompt}", batch_n=batch
+            )
