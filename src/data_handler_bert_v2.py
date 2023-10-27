@@ -62,9 +62,10 @@ class DataHandlerBERT:
         if v_scaling:
             self.vmax, _ = torch.max(self.V, dim=0)
             self.vmin, _ = torch.min(self.V, dim=0)
-            self.V = (self.V - self.vmin) / (self.vmax - self.vmin + 1e-9)
+            # self.V = (self.V - self.vmin) / (self.vmax - self.vmin + 1e-9)
             ############# WHAAAAAAAAAAAAAAT ERASE THIIIIIIIIIIIIIIIIIISSSSSSSSSSSSSSSSSSS
-            self.V = self.V * 0.8 + 0.1
+            # self.V = self.V * 0.8 + 0.1
+            self.V = (self.V-1)/8
 
         data = {
             "Z": self.Z,

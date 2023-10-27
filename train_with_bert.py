@@ -78,8 +78,9 @@ for channel in range(77):
                     f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt",
                 )
                 valid_loss_min = valid_loss
-                loss_hist[channel].append(valid_loss)
+            
+            loss_hist[channel].append(valid_loss)
 
 
-with open(f"{os.environ.get('MODEL_PATH')}/loss_hist.pkl", "wb") as f:
+with open(f"data/loss_hist_bert8.pkl", "wb") as f:
     pickle.dump(loss_hist, f)
