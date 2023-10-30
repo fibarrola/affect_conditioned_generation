@@ -15,7 +15,7 @@ data_handler = DataHandlerBERT()
 channel_losses = [0 for x in range(77)]
 loss_hist = [[] for x in range(77)]
 
-for channel in range(77):
+for channel in [3]: #range(77):
     print(f"----- Training channel {channel} -----")
     path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
     data_handler.preprocess(
@@ -55,6 +55,8 @@ for channel in range(77):
         with torch.no_grad():
             mlp.eval()  # prep model for evaluation
             for data, label in data_handler.test_loader:
+                # print(label)
+                # assert False
                 output = mlp(data)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
@@ -65,6 +67,9 @@ for channel in range(77):
             l1_loss_txt = l1_loss_txt / (3 * len(data_handler.test_loader.sampler))
 
             if (epoch) % 50 == 0:
+                print(label)
+                print(torch.mean(torch.abs(output - label), dim=0))
+                assert False
                 print(
                     'Epoch: {} \tTrain Loss: {:.3f} \tVal Loss: {:.3f} \ttxt Loss: {:.3f}'.format(
                         epoch + 1, train_loss, valid_loss, l1_loss_txt

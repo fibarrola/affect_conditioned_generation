@@ -3,7 +3,7 @@ import copy
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
 from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
-from src.utils import print_progress_bar, checked_path
+from src.utils import print_progress_bar, renum_path
 from omegaconf import OmegaConf
 import os
 import numpy as np
@@ -22,31 +22,34 @@ RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
 PROMPTS = [
-    "Forest",
-    "Sea",
-    "Lake",
-    "River",
-    "University",
-    "Castle",
-    "Shopping Mall",
-    "City",
-    "Grassland",
-    "Beach",
+    "Village",
     "Mountain",
-    "Tiger",
-    "Elephant",
-    "Lion",
-    "House on fire",
-    "Puppy",
-    "Storm",
-    "House overlooking the ocean",
-    "Puppy",
-    "Tiger",
-    "Elephant",
-    "Crocodile",
-    "Snake",
-    "Spider",
-    "Wasp",
+    "Forest",
+    "House",
+    # "Sea",
+    # "Lake",
+    # "River",
+    # "University",
+    # "Castle",
+    # "Shopping Mall",
+    # "City",
+    # "Grassland",
+    # "Beach",
+    # "Mountain",
+    # "Tiger",
+    # "Elephant",
+    # "Lion",
+    # "House on fire",
+    # "Puppy",
+    # "Storm",
+    # "House overlooking the ocean",
+    # "Puppy",
+    # "Tiger",
+    # "Elephant",
+    # "Crocodile",
+    # "Snake",
+    # "Spider",
+    # "Wasp",
 ]
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
@@ -60,7 +63,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT()
 for prompt in PROMPTS:
 
-    folder = f"{checked_path(FOLDER)}/{prompt.replace(' ','_')}"
+    folder = f"{renum_path(FOLDER)}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
     z_0 = model.get_learned_conditioning([prompt])
