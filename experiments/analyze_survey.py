@@ -10,9 +10,9 @@ df = df.rename(columns=new_names)
 
 print(df.columns)
 
-# print(df.iloc[0])
-
+#
 # Sorting
+#
 sorting_data = []
 for k in range(18):
     for choice_of in ["most", "least"]:
@@ -43,6 +43,61 @@ for generator in ["VQGAN+CLIP", "StableDifussion"]:
     aux = sorting_data[sorting_data["generator"]==generator]
     xx = ["correct", "close", "terrible"]
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
-    print(xx, yy)
     fig.add_trace(go.Bar(x = xx, y = yy, name=generator))
+# fig.show()
+
+fig = go.Figure()
+for aff_dim in ["Valence", "Arousal", "Dominance"]:
+    aux = sorting_data[sorting_data["affect_dim"]==aff_dim]
+    xx = ["correct", "close", "terrible"]
+    yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
+    fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
+# fig.show()
+
+#
+# Rating
+#
+rating_data = []
+for k in range(18, 54):
+    col_name = "{number:02d}".format(number=k+1)
+    generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
+    affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
+    for n in range(1,len(df)):
+        error = abs(df[col_name].iloc[0]-df[col_name].iloc[n])/8
+        right_answer = df[col_name].iloc[0]
+        rating_data.append({
+            "answer": df[col_name].iloc[n],
+            "right_answer": right_answer,
+            "error": error,
+            "generator": generator,
+            "affect_dim": affect_dim,
+        })
+
+fig = px.box(rating_data, x="error", color="generator")
+fig.show()
+fig = px.box(rating_data, x="error", color="affect_dim")
+fig.show()
+
+order_data = []
+for k in range(18, 54):
+    col_name = "{number:02d}".format(number=k+1)
+    generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
+    affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
+    if k%3 == 2:
+        right_ones = [df["{number:02d}".format(number=m+1)].iloc[0] for m in range(k-2,k+1)]
+        for n in range(1,len(df)):
+            generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
+            affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
+            answers = [df["{number:02d}".format(number=m+1)].iloc[n] for m in range(k-2,k+1)]
+            right_order = sorted(zip(right_ones, answers))
+            order_isright = right_order[0][1] < right_order[1][1] < right_order[2][1]
+            order_data.append({
+                "order_isright": order_isright,
+                "generator": generator,
+                "affect_dim": affect_dim,
+            })
+
+fig = px.histogram(order_data, x="order_isright", color="generator", histnorm="percent")
+fig.show()
+fig = px.histogram(order_data, x="order_isright", color="affect_dim", histnorm="percent")
 fig.show()
