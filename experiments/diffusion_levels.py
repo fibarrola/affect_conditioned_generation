@@ -17,10 +17,10 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 500
-FOLDER = "results/stdiff_survey0"
+FOLDER = renum_path("results/stdiff_survey_0")
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
-AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0]
+AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0, None]
 PROMPTS = [
     "Village",
     "Mountain",
@@ -63,7 +63,7 @@ criterion = torch.nn.MSELoss(reduction='mean')
 data_handler = DataHandlerBERT()
 for prompt in PROMPTS:
 
-    folder = f"{renum_path(FOLDER)}/{prompt.replace(' ','_')}"
+    folder = f"{FOLDER}/{prompt.replace(' ','_')}"
     os.makedirs(folder, exist_ok=True)
 
     z_0 = model.get_learned_conditioning([prompt])
@@ -73,63 +73,67 @@ for prompt in PROMPTS:
 
     for aff_idx in range(3):
         for aff_val in AFFECT_VALS:
-            v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
-            aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
+            if aff_val == None:
+                v_name = "noAff"
+            
+            else:
+                v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
+                aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
 
-            print(f"Generating {prompt} with affect {v_name}...")
+                print(f"Generating {prompt} with affect {v_name}...")
 
-            zz = torch.zeros_like(z_0)
-            total_affect = 0
+                zz = torch.zeros_like(z_0)
+                total_affect = 0
 
-            for channel in range(77):  # channel 0 has no info
-                aff_val.requires_grad = False
-                aff_val = aff_val.detach()
-                print_progress_bar(channel + 1, 77, channel + 1, suffix="-- Channel:")
+                for channel in range(77):  # channel 0 has no info
+                    aff_val.requires_grad = False
+                    aff_val = aff_val.detach()
+                    print_progress_bar(channel + 1, 77, channel + 1, suffix="-- Channel:")
 
-                path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
+                    path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
 
-                z = copy.deepcopy(z_0[:, channel, :])
+                    z = copy.deepcopy(z_0[:, channel, :])
 
-                if channel != 0:
+                    if channel != 0:
+
+                        with torch.no_grad():
+                            mlp = MLP(
+                                h0=int(os.environ.get('IMG_SIZE')),
+                                use_dropout=os.environ.get('USE_DROPOUT'),
+                                use_sigmoid=os.environ.get('USE_SIGMOID'),
+                            ).to('cuda:0')
+                            mlp.load_state_dict(
+                                torch.load(
+                                    f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"
+                                )
+                            )
+
+                        z += 0.01 * torch.std(z) * torch.rand_like(z)
+                        z.requires_grad = True
+
+                        opt = torch.optim.Adam([z], lr=0.2)
+
+                        for iter in range(MAX_ITER):
+                            opt.zero_grad()
+                            loss = 0
+                            loss += criterion(z, z_0[:, channel, :])
+                            det_aff_val = aff_val.detach()
+                            loss += AFF_WEIGHT * criterion(
+                                mlp(z)[:, aff_idx].unsqueeze(0), det_aff_val
+                            )
+                            loss.backward()
+                            opt.step()
+
+                        total_affect += mlp(z)[:, aff_idx].detach().item()
 
                     with torch.no_grad():
-                        mlp = MLP(
-                            h0=int(os.environ.get('IMG_SIZE')),
-                            use_dropout=os.environ.get('USE_DROPOUT'),
-                            use_sigmoid=os.environ.get('USE_SIGMOID'),
-                        ).to('cuda:0')
-                        mlp.load_state_dict(
-                            torch.load(
-                                f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"
-                            )
-                        )
+                        zz[0, channel, :] = copy.deepcopy(z.detach())
 
-                    z += 0.01 * torch.std(z) * torch.rand_like(z)
-                    z.requires_grad = True
+                    torch.cuda.empty_cache()
 
-                    opt = torch.optim.Adam([z], lr=0.2)
+                print(f"Mean Aff = {total_affect/76}, Target: {aff_val.item()}")
 
-                    for iter in range(MAX_ITER):
-                        opt.zero_grad()
-                        loss = 0
-                        loss += criterion(z, z_0[:, channel, :])
-                        det_aff_val = aff_val.detach()
-                        loss += AFF_WEIGHT * criterion(
-                            mlp(z)[:, aff_idx].unsqueeze(0), det_aff_val
-                        )
-                        loss.backward()
-                        opt.step()
-
-                    total_affect += mlp(z)[:, aff_idx].detach().item()
-
-                with torch.no_grad():
-                    zz[0, channel, :] = copy.deepcopy(z.detach())
-
-                torch.cuda.empty_cache()
-
-            print(f"Mean Aff = {total_affect/76}, Target: {aff_val.item()}")
-
-            zz = zz.to('cpu')
+                zz = zz.to('cpu')
 
             stable_diffuser = StableDiffuser()
             for batch in range(int(np.ceil(N_SAMPLES / 3))):
@@ -137,7 +141,9 @@ for prompt in PROMPTS:
                     prompt=prompt,
                     start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
                 )
-                stable_diffuser.override_zz(zz)
+                if aff_val is not None:
+                    stable_diffuser.override_zz(zz)
+                    
                 stable_diffuser.run_diffusion(
                     alt_savepath=folder, im_name=f"_{v_name}", batch_n=batch
                 )
