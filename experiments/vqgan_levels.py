@@ -8,20 +8,17 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 7
-FOLDER = "results/vqgan_survey"
+FOLDER = "results/vqgan_survey_0"
 N_SAMPLES = 3
-# AFFECT_VALS = [0.05, 0.25, 0.5, 0.75, 0.95]
-AFFECT_VALS = [0.05, 0.5, 0.95]
+AFFECT_VALS = [0.03, 0.25, 0.5, 0.75, 0.97, None]
 PROMPTS = [
-    "a house",
-    "a storm",
-    # "Sea",
-    # "Forest",
-    # "Mountain",
-    # "Grassland",
-    # "Island",
-    # "Beach",
-    # "City",
+    "A storm",
+    "A Village",
+    "A Mountain",
+    "A House",
+    "The Sea",
+    "A Beach",
+    "A City",
 ]
 
 # MAIN starts here
@@ -47,7 +44,7 @@ for prompt in PROMPTS:
             0.95 * torch.ones((3), device=device) - default_affect,
             default_affect - 0.05 * torch.ones((3), device=device),
         )
-        for aff_idx in range(1):
+        for aff_idx in range(3):
             print(
                 f"Generating {prompt} -- default affect {round(100*default_affect[0].item())}..."
             )
