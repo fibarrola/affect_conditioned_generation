@@ -49,6 +49,10 @@ for generator in ["VQGAN+CLIP", "StableDifussion"]:
     xx = ["correct", "close", "terrible"]
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=generator))
+fig.update_layout(
+    title="Correct Identification Rates",
+    yaxis={"tickformat": ',.0%', "range":[0, 1]}
+)
 fig.show()
 
 fig = go.Figure()
@@ -57,6 +61,11 @@ for aff_dim in ["Valence", "Arousal", "Dominance"]:
     xx = ["correct", "close", "terrible"]
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
+fig.update_layout(
+    title={"text":"Correct Identification Rates"},
+    yaxis={"tickformat": ',.0%', "range":[0, 1]}
+)
+
 fig.show()
 
 
@@ -74,6 +83,8 @@ for col_name in df.columns:
             })
 quality_data = pd.DataFrame(quality_data)
 fig = px.box(quality_data, x="conditioning", y="score")
+fig.update_yaxes(range=[-0.5, 7.5])
+fig.update_layout(title="Quality Scores")
 fig.show()
 
 
