@@ -12,13 +12,15 @@ FOLDER = "results/vqgan_survey_0"
 N_SAMPLES = 3
 AFFECT_VALS = [0.03, 0.25, 0.5, 0.75, 0.97, None]
 PROMPTS = [
-    "A storm",
-    "A Village",
-    "A Mountain",
-    "A House",
-    "The Sea",
-    "A Beach",
-    "A City",
+    "A castle",
+    "A university",
+    # "A storm",
+    # "A Village",
+    # "A Mountain",
+    # "A House",
+    # "The Sea",
+    # "A Beach",
+    # "A City",
 ]
 
 # MAIN starts here
