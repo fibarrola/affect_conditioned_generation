@@ -1,9 +1,12 @@
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
 df = df.dropna()
+# df = df.drop(3)
+# df = df.drop(4)
 # print(df.columns)
 print(len(df))
 new_names = {col_name:f"{col_name[:2]}_{'most' if k%2==1 else 'least'}" for k, col_name in enumerate(df.columns) if col_name[4:8]=="Pick"}
@@ -13,6 +16,8 @@ new_names = {col_name:f"Q{col_name[:2]}" for col_name in df.columns if col_name[
 df = df.rename(columns=new_names)
 # print(df.columns)
 print(df)
+
+ERRORS = ["Correct", "Small Error", "Large Error"]
 
 #
 # Sorting
@@ -27,10 +32,10 @@ for k in range(24):
         # print(generator, affect_dim, right_answer)
         for n in range(1, len(df)):
             if df[col_name].iloc[n] == right_answer:
-                correctness = "correct"
+                correctness = ERRORS[0]
             else:
                 other_choice = "most" if choice_of == "least" else "least"
-                correctness = "terrible" if df[col_name].iloc[n] == df["{number:02d}_{choice_of:}".format(number=k+1, choice_of=other_choice)].iloc[0] else "close"
+                correctness = ERRORS[2] if df[col_name].iloc[n] == df["{number:02d}_{choice_of:}".format(number=k+1, choice_of=other_choice)].iloc[0] else ERRORS[1]
             sorting_data.append({
                 "answer": df[col_name].iloc[n],
                 "right_answer": right_answer,
@@ -46,17 +51,36 @@ print(sorting_data)
 fig = go.Figure()
 for generator in ["VQGAN+CLIP", "StableDifussion"]:
     aux = sorting_data[sorting_data["generator"]==generator]
-    xx = ["correct", "close", "terrible"]
+    xx = ERRORS
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=generator))
+fig.update_layout(
+    title="Correct Identification Rates",
+    title_x=0.5,
+    title_y=0.85,
+    yaxis={"tickformat": ',.0%', "range":[0, 1]},
+    bargap=0.2,
+    bargroupgap=0.2,
+    legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
+)
 fig.show()
 
 fig = go.Figure()
 for aff_dim in ["Valence", "Arousal", "Dominance"]:
     aux = sorting_data[sorting_data["affect_dim"]==aff_dim]
-    xx = ["correct", "close", "terrible"]
+    xx = ERRORS
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
+fig.update_layout(
+    title={"text":"Correct Identification Rates"},
+    title_x=0.5,
+    title_y=0.85,
+    yaxis={"tickformat": ',.0%', "range":[0, 1]},
+    bargap=0.2,
+    bargroupgap=0.2,
+    legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
+)
+
 fig.show()
 
 
@@ -64,16 +88,46 @@ fig.show()
 # Quality
 #
 quality_data = []
+
+
+# Old survey
+df_old = pd.read_csv("data/responses.csv")
+col_names = df_old.columns.values
+refs = df_old[df_old['Full name:'] == 'Ideal responder']
+df_old = df_old.drop(0)
+data = {"score": [], 'prompt': [], "Mode": []}
+for col_name in col_names:
+    if col_name[:8] == 'How well':
+        affect_cond = "No affect" if refs[col_name].item() == 1 else "Affect-conditioning" 
+        for x in df_old[col_name]:
+            if not np.isnan(x):
+                quality_data.append({
+                    "score": x,
+                    "conditioning": affect_cond,
+                    "generator": "VQGAN+CLIP"
+                })
+
+# New survey
+
 for col_name in df.columns:
     if col_name[0] == "Q":
-        affect_cond = "affect_conditioned" if df[col_name].iloc[0] == 7 else "no_affect"
+        affect_cond = "Affect-conditioning" if df[col_name].iloc[0] == 7 else "No affect"
         for n in range(1, len(df)):
             quality_data.append({
                 "score": df[col_name].iloc[n],
                 "conditioning": affect_cond,
+                "generator": "Stable Diffusion"
             })
+
 quality_data = pd.DataFrame(quality_data)
-fig = px.box(quality_data, x="conditioning", y="score")
+fig = px.box(quality_data, x="generator", y="score", color="conditioning")
+fig.update_yaxes(range=[-0.5, 7.5])
+fig.update_xaxes(title=None)
+fig.update_layout(
+    title="Quality Scores",
+    title_x=0.5,
+    legend={"yanchor":"bottom", "y":0.01, "xanchor":"right", "x":0.99}
+)
 fig.show()
 
 

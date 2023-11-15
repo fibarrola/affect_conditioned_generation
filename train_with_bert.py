@@ -15,7 +15,7 @@ data_handler = DataHandlerBERT()
 channel_losses = [0 for x in range(77)]
 loss_hist = [[] for x in range(77)]
 
-for channel in [3]: #range(77):
+for channel in range(77):
     print(f"----- Training channel {channel} -----")
     path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
     data_handler.preprocess(
@@ -60,16 +60,16 @@ for channel in [3]: #range(77):
                 output = mlp(data)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
-                l1_loss_txt += torch.sum(torch.abs(output - label)).item()
+                l1_loss_txt += torch.sum((output - label)**2).item()
 
             train_loss = train_loss / len(data_handler.train_loader.sampler)
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)
             l1_loss_txt = l1_loss_txt / (3 * len(data_handler.test_loader.sampler))
 
             if (epoch) % 50 == 0:
-                print(label)
-                print(torch.mean(torch.abs(output - label), dim=0))
-                assert False
+                # print(label)
+                # print(torch.mean(torch.abs(output - label), dim=0))
+                # assert False
                 print(
                     'Epoch: {} \tTrain Loss: {:.3f} \tVal Loss: {:.3f} \ttxt Loss: {:.3f}'.format(
                         epoch + 1, train_loss, valid_loss, l1_loss_txt
@@ -77,15 +77,15 @@ for channel in [3]: #range(77):
                 )
 
             # save model
-            if valid_loss <= valid_loss_min:
-                torch.save(
-                    mlp.state_dict(),
-                    f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt",
-                )
-                valid_loss_min = valid_loss
+            # if valid_loss <= valid_loss_min:
+            #     torch.save(
+            #         mlp.state_dict(),
+            #         f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt",
+            #     )
+            #     valid_loss_min = valid_loss
             
             loss_hist[channel].append(valid_loss)
 
 
-with open(f"data/loss_hist_bert8.pkl", "wb") as f:
+with open(f"data/loss_hist_bert8_mse.pkl", "wb") as f:
     pickle.dump(loss_hist, f)
