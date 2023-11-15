@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import plotly.graph_objects as go
 
-with open(f"data/loss_hist_8.pkl", "rb") as f:
+with open(f"data/loss_hist_8_mse.pkl", "rb") as f:
     loss_hist = pickle.load(f)
 
 loss_hist = np.array(loss_hist)
@@ -30,7 +30,7 @@ fig.update_layout(
 )
 fig.show()  
 
-with open(f"data/loss_hist_bert8.pkl", "rb") as f:
+with open(f"data/loss_hist_bert8_mse.pkl", "rb") as f:
     loss_hist = pickle.load(f)
 
 fig = go.Figure()

@@ -17,6 +17,8 @@ df = df.rename(columns=new_names)
 # print(df.columns)
 print(df)
 
+ERRORS = ["Correct", "Small Error", "Large Error"]
+
 #
 # Sorting
 #
@@ -30,10 +32,10 @@ for k in range(24):
         # print(generator, affect_dim, right_answer)
         for n in range(1, len(df)):
             if df[col_name].iloc[n] == right_answer:
-                correctness = "correct"
+                correctness = ERRORS[0]
             else:
                 other_choice = "most" if choice_of == "least" else "least"
-                correctness = "terrible" if df[col_name].iloc[n] == df["{number:02d}_{choice_of:}".format(number=k+1, choice_of=other_choice)].iloc[0] else "close"
+                correctness = ERRORS[2] if df[col_name].iloc[n] == df["{number:02d}_{choice_of:}".format(number=k+1, choice_of=other_choice)].iloc[0] else ERRORS[1]
             sorting_data.append({
                 "answer": df[col_name].iloc[n],
                 "right_answer": right_answer,
@@ -49,7 +51,7 @@ print(sorting_data)
 fig = go.Figure()
 for generator in ["VQGAN+CLIP", "StableDifussion"]:
     aux = sorting_data[sorting_data["generator"]==generator]
-    xx = ["correct", "close", "terrible"]
+    xx = ERRORS
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=generator))
 fig.update_layout(
@@ -66,7 +68,7 @@ fig.show()
 fig = go.Figure()
 for aff_dim in ["Valence", "Arousal", "Dominance"]:
     aux = sorting_data[sorting_data["affect_dim"]==aff_dim]
-    xx = ["correct", "close", "terrible"]
+    xx = ERRORS
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
 fig.update_layout(
@@ -96,7 +98,7 @@ df_old = df_old.drop(0)
 data = {"score": [], 'prompt': [], "Mode": []}
 for col_name in col_names:
     if col_name[:8] == 'How well':
-        affect_cond = "no_affect" if refs[col_name].item() == 1 else "affect_conditioned"
+        affect_cond = "No affect" if refs[col_name].item() == 1 else "Affect-conditioning" 
         for x in df_old[col_name]:
             if not np.isnan(x):
                 quality_data.append({
@@ -109,7 +111,7 @@ for col_name in col_names:
 
 for col_name in df.columns:
     if col_name[0] == "Q":
-        affect_cond = "affect_conditioned" if df[col_name].iloc[0] == 7 else "no_affect"
+        affect_cond = "Affect-conditioning" if df[col_name].iloc[0] == 7 else "No affect"
         for n in range(1, len(df)):
             quality_data.append({
                 "score": df[col_name].iloc[n],
@@ -118,7 +120,7 @@ for col_name in df.columns:
             })
 
 quality_data = pd.DataFrame(quality_data)
-fig = px.box(quality_data, x="conditioning", y="score", color="generator")
+fig = px.box(quality_data, x="generator", y="score", color="conditioning")
 fig.update_yaxes(range=[-0.5, 7.5])
 fig.update_xaxes(title=None)
 fig.update_layout(
