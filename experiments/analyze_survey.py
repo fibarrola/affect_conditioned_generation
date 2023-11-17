@@ -5,17 +5,12 @@ import plotly.graph_objects as go
 
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
 df = df.dropna()
-# df = df.drop(3)
-# df = df.drop(4)
-# print(df.columns)
 print(len(df))
 new_names = {col_name:f"{col_name[:2]}_{'most' if k%2==1 else 'least'}" for k, col_name in enumerate(df.columns) if col_name[4:8]=="Pick"}
 df = df.rename(columns=new_names)
 df = df.rename(columns={df.columns[4]:"computer/phone"})
 new_names = {col_name:f"Q{col_name[:2]}" for col_name in df.columns if col_name[4:7]=="How"}
 df = df.rename(columns=new_names)
-# print(df.columns)
-print(df)
 
 ERRORS = ["Correct", "Small Error", "Large Error"]
 
