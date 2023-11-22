@@ -76,7 +76,7 @@ fig.update_layout(
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
 
-# fig.show()
+fig.show()
 
 
 #
