@@ -58,7 +58,7 @@ fig.update_layout(
     bargroupgap=0.2,
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
-fig.show()
+# fig.show()
 
 fig = go.Figure()
 for aff_dim in ["Valence", "Arousal", "Dominance"]:
@@ -76,7 +76,7 @@ fig.update_layout(
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
 
-fig.show()
+# fig.show()
 
 
 #
@@ -123,51 +123,28 @@ fig.update_layout(
     title_x=0.5,
     legend={"yanchor":"bottom", "y":0.01, "xanchor":"right", "x":0.99}
 )
+# fig.show()
+
+
+df = pd.read_csv("data/Affect_Ratings (Responses) - Form responses 1.csv")
+df = df.dropna()
+rating_data = []
+for col_name in df.columns[4:]:
+    k = int(col_name[:2])-1
+    generator = "VQGAN+CLIP" if (k//6) % 2 ==0 else "StableDifussion"
+    affect_dim = "Valence" if (k//12) % 3 ==0 else ("Arousal" if (k//12) % 3 ==1 else "Dominance")
+    # print(affect_dim, generator)
+    right_answer = df[col_name].iloc[0]
+    for n in range(1, len(df)):
+        rating_data.append({
+            "answer": df[col_name].iloc[n],
+            "right_answer": right_answer,
+            "error": abs(right_answer-df[col_name].iloc[n]),
+            "generator": generator,
+            "affect_dim": affect_dim,
+        })
+
+fig = px.box(rating_data, x="error", color="generator")
 fig.show()
-
-
-
-# rating_data = []
-# for k in range(18, 54):
-#     col_name = "{number:02d}".format(number=k+1)
-#     generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
-#     affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
-#     for n in range(1,len(df)):
-#         error = abs(df[col_name].iloc[0]-df[col_name].iloc[n])/8
-#         right_answer = df[col_name].iloc[0]
-#         rating_data.append({
-#             "answer": df[col_name].iloc[n],
-#             "right_answer": right_answer,
-#             "error": error,
-#             "generator": generator,
-#             "affect_dim": affect_dim,
-#         })
-
-# fig = px.box(rating_data, x="error", color="generator")
-# fig.show()
-# fig = px.box(rating_data, x="error", color="affect_dim")
-# fig.show()
-
-# order_data = []
-# for k in range(18, 54):
-#     col_name = "{number:02d}".format(number=k+1)
-#     generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
-#     affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
-#     if k%3 == 2:
-#         right_ones = [df["{number:02d}".format(number=m+1)].iloc[0] for m in range(k-2,k+1)]
-#         for n in range(1,len(df)):
-#             generator = "VQGAN+CLIP" if (k//3) % 2 ==0 else "StableDifussion"
-#             affect_dim = "Valence" if ((k-18)//12) % 3 ==0 else ("Arousal" if ((k-18)//12) % 3 ==1 else "Dominance")
-#             answers = [df["{number:02d}".format(number=m+1)].iloc[n] for m in range(k-2,k+1)]
-#             right_order = sorted(zip(right_ones, answers))
-#             order_isright = right_order[0][1] < right_order[1][1] < right_order[2][1]
-#             order_data.append({
-#                 "order_isright": order_isright,
-#                 "generator": generator,
-#                 "affect_dim": affect_dim,
-#             })
-
-# fig = px.histogram(order_data, x="order_isright", color="generator", histnorm="percent")
-# fig.show()
-# fig = px.histogram(order_data, x="order_isright", color="affect_dim", histnorm="percent")
-# fig.show()
+fig = px.box(rating_data, x="error", color="affect_dim")
+fig.show()

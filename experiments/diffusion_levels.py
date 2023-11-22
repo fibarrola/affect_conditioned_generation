@@ -17,7 +17,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 500
-FOLDER = renum_path("results/stdiff_survey_0")
+FOLDER = renum_path("results/stdiff_survey")
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0, None]
@@ -104,7 +104,8 @@ for prompt in PROMPTS:
                         for iter in range(MAX_ITER):
                             opt.zero_grad()
                             loss = 0
-                            loss += criterion(z, z_0[:, channel, :])
+                            # loss += criterion(z, z_0[:, channel, :])
+                            loss -= torch.cosine_similarity(z, z_0[:, channel, :])
                             det_aff_val = aff_val.detach()
                             loss += AFF_WEIGHT * criterion(
                                 mlp(z)[:, aff_idx].unsqueeze(0), det_aff_val
