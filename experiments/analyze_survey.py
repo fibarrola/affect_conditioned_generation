@@ -58,7 +58,7 @@ fig.update_layout(
     bargroupgap=0.2,
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
-# fig.show()
+fig.show()
 
 fig = go.Figure()
 for aff_dim in ["Valence", "Arousal", "Dominance"]:
@@ -123,7 +123,7 @@ fig.update_layout(
     title_x=0.5,
     legend={"yanchor":"bottom", "y":0.01, "xanchor":"right", "x":0.99}
 )
-# fig.show()
+fig.show()
 
 
 df = pd.read_csv("data/Affect_Ratings (Responses) - Form responses 1.csv")
