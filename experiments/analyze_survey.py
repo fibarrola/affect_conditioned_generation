@@ -3,7 +3,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-SHOW_RANKINGS = False
+SHOW_RANKINGS = True
 SHOW_RATINGS = True
 
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
