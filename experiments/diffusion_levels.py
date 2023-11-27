@@ -17,23 +17,23 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MAX_ITER = 500
 AFF_WEIGHT = 500
-FOLDER = renum_path("results/stdiff_survey")
+FOLDER = renum_path("results/stdiff_surveyB")
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
 AFFECT_VALS = [0.0, 0.25, 0.5, 0.75, 1.0, None]
 PROMPTS = [
-    "A castle",
-    "A university",
-    "A storm",
-    "A Village",
-    "An earthquake",
-    "A canyon",
-    "A ship",
-    "pirates",
-    "A Mountain",
-    "A House",
-    "The Sea",
-    "A Beach",
+    # "A castle",
+    # "A university",
+    # "A storm",
+    # "A Village",
+    # "An earthquake",
+    # "A canyon",
+    # "A ship",
+    # "pirates",
+    # "A Mountain",
+    # "A House",
+    # "The Sea",
+    # "A Beach",
     "A City",
     "A house overlooking the sea",
     "A house on fire",

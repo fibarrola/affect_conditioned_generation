@@ -14,13 +14,20 @@ AFFECT_VALS = [0.03, 0.25, 0.5, 0.75, 0.97, None]
 PROMPTS = [
     "A castle",
     "A university",
-    # "A storm",
-    # "A Village",
-    # "A Mountain",
-    # "A House",
-    # "The Sea",
-    # "A Beach",
-    # "A City",
+    "A storm",
+    "A Village",
+    "An earthquake",
+    "A canyon",
+    "A ship",
+    "pirates",
+    "A Mountain",
+    "A House",
+    "The Sea",
+    "A Beach",
+    "A City",
+    "A house overlooking the sea",
+    "A house on fire",
+    "A volcano"
 ]
 
 # MAIN starts here

@@ -3,6 +3,9 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
+SHOW_RANKINGS = True
+SHOW_RATINGS = True
+
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
 df = df.dropna()
 print(len(df))
@@ -58,7 +61,8 @@ fig.update_layout(
     bargroupgap=0.2,
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
-fig.show()
+if SHOW_RANKINGS:
+    fig.show()
 
 fig = go.Figure()
 for aff_dim in ["Valence", "Arousal", "Dominance"]:
@@ -76,7 +80,8 @@ fig.update_layout(
     legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
 )
 
-# fig.show()
+if SHOW_RANKINGS:
+    fig.show()
 
 
 #
@@ -123,7 +128,8 @@ fig.update_layout(
     title_x=0.5,
     legend={"yanchor":"bottom", "y":0.01, "xanchor":"right", "x":0.99}
 )
-fig.show()
+if SHOW_RANKINGS:
+    fig.show()
 
 
 df = pd.read_csv("data/Affect_Ratings (Responses) - Form responses 1.csv")
@@ -144,7 +150,89 @@ for col_name in df.columns[4:]:
             "affect_dim": affect_dim,
         })
 
-fig = px.box(rating_data, x="error", color="generator")
-fig.show()
-fig = px.box(rating_data, x="error", color="affect_dim")
-fig.show()
+rating_data = pd.DataFrame(rating_data)
+
+
+if SHOW_RATINGS:
+    fig = px.box(rating_data, x="error", color="generator")
+    fig.show()
+    fig = px.box(rating_data, x="error", color="affect_dim")
+    fig.show()
+
+rating_order = []
+col_names = df.columns[4:]
+n_sets = len(col_names)//3
+for n_set in range(n_sets):
+    cols_set = col_names[3*n_set:3*(n_set+1)]
+    right_answers = [df[col_name].iloc[0] for col_name in cols_set]
+    for n in range(1, len(df)):
+        for inset_idx in range(3):
+            
+            k = int(cols_set[inset_idx][:2])-1
+            generator = "VQGAN+CLIP" if (k//6) % 2 ==0 else "StableDifussion"
+            affect_dim = "Valence" if (k//12) % 3 ==0 else ("Arousal" if (k//12) % 3 ==1 else "Dominance")
+            
+            answers = [df[col_name].iloc[n] for col_name in cols_set]
+            this_answer = answers.pop(inset_idx)
+            if right_answers[inset_idx] == 1:
+                if this_answer <= answers[0] and this_answer <= answers[1]:
+                    correctness = "Correct"
+                else: 
+                    correctness = "Incorrect"
+
+            elif right_answers[inset_idx] == 9:
+                if this_answer >= answers[0] and this_answer >= answers[1]:
+                    correctness = "Correct"
+                else: 
+                    correctness = "Incorrect"
+
+            else:
+                if this_answer >= answers[0] and this_answer <= answers[1]:
+                    correctness = "Correct"
+                elif this_answer <= answers[0] and this_answer >= answers[1]:
+                    correctness = "Correct"
+                else: 
+                    correctness = "Incorrect"
+
+            rating_order.append({
+                "is correct": correctness,
+                "generator": generator,
+                "affect_dim": affect_dim,
+            })
+
+rating_order = pd.DataFrame(rating_order)
+
+if SHOW_RATINGS:
+    fig = go.Figure()
+    for generator in ["VQGAN+CLIP", "StableDifussion"]:
+        aux = rating_order[rating_order["generator"]==generator]
+        xx = ["Correct", "Incorrect"]
+        yy = [len(aux[aux["is correct"]==correctness])/len(aux) for correctness in xx]
+        fig.add_trace(go.Bar(x = xx, y = yy, name=generator))
+    fig.update_layout(
+        title="Correct Identification Rates",
+        title_x=0.5,
+        title_y=0.85,
+        yaxis={"tickformat": ',.0%', "range":[0, 1]},
+        bargap=0.2,
+        bargroupgap=0.2,
+        legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
+    )
+    fig.show()
+
+    fig = go.Figure()
+    for aff_dim in ["Valence", "Arousal", "Dominance"]:
+        aux = rating_order[rating_order["affect_dim"]==aff_dim]
+        xx = ["Correct", "Incorrect"]
+        yy = [len(aux[aux["is correct"]==correctness])/len(aux) for correctness in xx]
+        fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
+    fig.update_layout(
+        title={"text":"Correct Identification Rates"},
+        title_x=0.5,
+        title_y=0.85,
+        yaxis={"tickformat": ',.0%', "range":[0, 1]},
+        bargap=0.2,
+        bargroupgap=0.2,
+        legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
+    )
+    fig.show()
