@@ -36,11 +36,20 @@ class DataHandlerBERT:
             "stable_diffusion/configs/stable-diffusion/v1-inference.yaml"
         )
         self.model = load_model_from_config(
-            config, "stable_diffusion/models/ldm/stable-diffusion-v1/v1-5-pruned-emaonly.ckpt"
+            config,
+            "stable_diffusion/models/ldm/stable-diffusion-v1/v1-5-pruned-emaonly.ckpt",
         )
 
     @torch.no_grad()
-    def preprocess(self, savepath, word_type=None, z_scaling='none', v_scaling='none', word_batch_size=2048, channel=9):
+    def preprocess(
+        self,
+        savepath,
+        word_type=None,
+        z_scaling='none',
+        v_scaling='none',
+        word_batch_size=2048,
+        channel=9,
+    ):
         torch.cuda.empty_cache()
         fil_df = self.df[self.df["Type"] == word_type] if word_type else self.df
         self.words = list(fil_df["Word"])
@@ -50,11 +59,12 @@ class DataHandlerBERT:
             int(np.ceil(len(self.words) / word_batch_size))
         ):  # looks weird but avoids all lenght problems
             words_subset = self.words[
-                m
-                * word_batch_size : min(len(self.words), (m + 1) * word_batch_size)
+                m * word_batch_size : min(len(self.words), (m + 1) * word_batch_size)
             ]
             with torch.no_grad():
-                Z_subset = self.model.get_learned_conditioning(words_subset)[:, channel, :]
+                Z_subset = self.model.get_learned_conditioning(words_subset)[
+                    :, channel, :
+                ]
                 Z = torch.cat([Z, Z_subset], 0)
                 if len(self.words) <= (m + 1) * word_batch_size:
                     break
@@ -92,6 +102,12 @@ class DataHandlerBERT:
         Z = self.scaler_Z.scale(self.Z)
         V = self.scaler_V.scale(self.V)
         dataset = TensorDataset(Z, V, self.Vsd)
-        (ds_train, ds_test) = random_split(dataset, [round(len(dataset) * train_ratio), round(len(dataset) * (1 - train_ratio))])
+        (ds_train, ds_test) = random_split(
+            dataset,
+            [
+                round(len(dataset) * train_ratio),
+                round(len(dataset) * (1 - train_ratio)),
+            ],
+        )
         self.train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
         self.test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)

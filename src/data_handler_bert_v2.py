@@ -32,7 +32,17 @@ class DataHandlerBERT:
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
     @torch.no_grad()
-    def preprocess(self, csv_path, savepath, sdconfig, sdmodel, word_type=None, v_scaling=False, word_batch_size=2048, channel=9):
+    def preprocess(
+        self,
+        csv_path,
+        savepath,
+        sdconfig,
+        sdmodel,
+        word_type=None,
+        v_scaling=False,
+        word_batch_size=2048,
+        channel=9,
+    ):
         self.df = pd.read_csv(csv_path).dropna()
         config = OmegaConf.load(sdconfig)
         self.model = load_model_from_config(config, sdmodel)
@@ -45,11 +55,12 @@ class DataHandlerBERT:
             int(np.ceil(len(self.words) / word_batch_size))
         ):  # looks weird but avoids all lenght problems
             words_subset = self.words[
-                m
-                * word_batch_size : min(len(self.words), (m + 1) * word_batch_size)
+                m * word_batch_size : min(len(self.words), (m + 1) * word_batch_size)
             ]
             with torch.no_grad():
-                Z_subset = self.model.get_learned_conditioning(words_subset)[:, channel, :]
+                Z_subset = self.model.get_learned_conditioning(words_subset)[
+                    :, channel, :
+                ]
                 self.Z = torch.cat([self.Z, Z_subset], 0)
                 if len(self.words) <= (m + 1) * word_batch_size:
                     break
@@ -65,7 +76,7 @@ class DataHandlerBERT:
             # self.V = (self.V - self.vmin) / (self.vmax - self.vmin + 1e-9)
             ############# WHAAAAAAAAAAAAAAT ERASE THIIIIIIIIIIIIIIIIIISSSSSSSSSSSSSSSSSSS
             # self.V = self.V * 0.8 + 0.1
-            self.V = (self.V-1)/8
+            self.V = (self.V - 1) / 8
 
         data = {
             "Z": self.Z,
@@ -88,6 +99,12 @@ class DataHandlerBERT:
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):
         dataset = TensorDataset(self.Z, self.V)
-        (ds_train, ds_test) = random_split(dataset, [round(len(dataset) * train_ratio), round(len(dataset) * (1 - train_ratio))])
+        (ds_train, ds_test) = random_split(
+            dataset,
+            [
+                round(len(dataset) * train_ratio),
+                round(len(dataset) * (1 - train_ratio)),
+            ],
+        )
         self.train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
         self.test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)
