@@ -4,11 +4,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 SHOW_RANKINGS = True
-SHOW_RATINGS = True
+SHOW_RATINGS = False
 
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
 df = df.dropna()
-print(len(df))
 new_names = {col_name:f"{col_name[:2]}_{'most' if k%2==1 else 'least'}" for k, col_name in enumerate(df.columns) if col_name[4:8]=="Pick"}
 df = df.rename(columns=new_names)
 df = df.rename(columns={df.columns[4]:"computer/phone"})
@@ -27,7 +26,6 @@ for k in range(24):
         generator = "VQGAN+CLIP" if (k//4) % 2 ==0 else "StableDifussion"
         affect_dim = "Valence" if (k//8) % 3 ==0 else ("Arousal" if (k//8) % 3 ==1 else "Dominance")
         right_answer = df[col_name].iloc[0]
-        # print(generator, affect_dim, right_answer)
         for n in range(1, len(df)):
             if df[col_name].iloc[n] == right_answer:
                 correctness = ERRORS[0]
@@ -44,7 +42,6 @@ for k in range(24):
             })
 
 sorting_data = pd.DataFrame(sorting_data)
-print(sorting_data)
 # fig = px.histogram(sorting_data, x="correctness", color="generator", histnorm="percent")
 fig = go.Figure()
 for generator in ["VQGAN+CLIP", "StableDifussion"]:
@@ -70,6 +67,49 @@ for aff_dim in ["Valence", "Arousal", "Dominance"]:
     xx = ERRORS
     yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
     fig.add_trace(go.Bar(x = xx, y = yy, name=aff_dim))
+fig.update_layout(
+    title={"text":"Correct Identification Rates"},
+    title_x=0.5,
+    title_y=0.85,
+    yaxis={"tickformat": ',.0%', "range":[0, 1]},
+    bargap=0.2,
+    bargroupgap=0.2,
+    legend={"yanchor":"top", "y":0.99, "xanchor":"right", "x":0.99},
+)
+
+if SHOW_RANKINGS:
+    fig.show()
+
+color_dict = {
+    "VQGAN+CLIP": {
+        "Valence":"#a02c2c",
+        "Arousal":"#5aa02c",
+        "Dominance":"#2c5aa0",
+    },
+    "StableDifussion": {
+        "Valence":"#d35f5f",
+        "Arousal":"#8dd35f",
+        "Dominance":"#5f8dd3",
+    }
+}
+color_dict = {
+    "Valence": "#5f8dd3",
+    "Arousal":"#8dd35f",
+    "Dominance":"#d35f5f",
+}
+patterns = {
+    "VQGAN+CLIP": "",
+    "StableDifussion": "/" 
+}
+fig = go.Figure()
+for aff_dim in ["Valence", "Arousal", "Dominance"]:
+    for generator in ["VQGAN+CLIP", "StableDifussion"]:
+        aux = sorting_data[sorting_data["affect_dim"]==aff_dim]
+        aux = aux[aux["generator"]==generator]
+        xx = ERRORS
+        yy = [len(aux[aux["correctness"]==correctness])/len(aux) for correctness in xx]
+        # fig.add_trace(go.Bar(x = xx, y = yy, name=f"{generator}, {aff_dim}", marker={"color":color_dict[generator][aff_dim]}))
+        fig.add_trace(go.Bar(x = xx, y = yy, name=f"{generator}, {aff_dim}", marker={"color":color_dict[aff_dim]}, marker_pattern_shape=patterns[generator]))
 fig.update_layout(
     title={"text":"Correct Identification Rates"},
     title_x=0.5,
