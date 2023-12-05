@@ -92,6 +92,7 @@ def renum_path(path):
 
     return f"{path}_{k}"
 
+
 def print_progress_bar(
     iteration,
     total,

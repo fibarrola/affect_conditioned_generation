@@ -27,7 +27,7 @@ PROMPTS = [
     "A City",
     "A house overlooking the sea",
     "A house on fire",
-    "A volcano"
+    "A volcano",
 ]
 
 # MAIN starts here
@@ -68,7 +68,7 @@ for prompt in PROMPTS:
                     prompts=prompt,
                     v=aff_vec,
                     savepath=f"{folder}/{prompt.replace(' ','_')}/{sample}_{v_name}.png",
-                    seed=20+sample,
+                    seed=20 + sample,
                     noise_0=noise_0,
                 )
                 i = 0

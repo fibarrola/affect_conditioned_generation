@@ -60,7 +60,7 @@ for channel in range(77):
                 output = mlp(data)
                 loss = criterion(output, label)
                 valid_loss += loss.item() * data.size(0)
-                l1_loss_txt += torch.sum((output - label)**2).item()
+                l1_loss_txt += torch.sum((output - label) ** 2).item()
 
             train_loss = train_loss / len(data_handler.train_loader.sampler)
             valid_loss = valid_loss / len(data_handler.test_loader.sampler)
@@ -83,9 +83,9 @@ for channel in range(77):
             #         f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt",
             #     )
             #     valid_loss_min = valid_loss
-            
+
             loss_hist[channel].append(valid_loss)
 
 
-with open(f"data/loss_hist_bert8_mse.pkl", "wb") as f:
+with open("data/loss_hist_bert8_mse.pkl", "wb") as f:
     pickle.dump(loss_hist, f)

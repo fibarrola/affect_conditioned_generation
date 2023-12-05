@@ -8,6 +8,7 @@ from src.utils import imread, square_crop
 import clip
 import argparse
 from dotenv import load_dotenv
+
 param_env = "bert.env"
 
 load_dotenv(param_env)
@@ -82,14 +83,12 @@ config = OmegaConf.load(os.environ.get("SD_CONFIG"))
 model = load_model_from_config(config, os.environ.get("SD_MODEL"))
 z_0 = model.get_learned_conditioning([args.prompt]).to('cuda:0')
 
-affect = torch.tensor([[0.,0.,0.]]).to('cuda:0')
+affect = torch.tensor([[0.0, 0.0, 0.0]]).to('cuda:0')
 for channel in range(77):
 
     mlp.load_state_dict(
-        torch.load(
-            f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt"
-        )
+        torch.load(f"{os.environ.get('MODEL_PATH')}/model_ch_{channel}.pt")
     )
     affect += mlp(z_0[:, channel, :])
 
-print(affect/77)
+print(affect / 77)

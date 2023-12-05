@@ -37,7 +37,7 @@ PROMPTS = [
     "A City",
     "A house overlooking the sea",
     "A house on fire",
-    "A volcano"
+    "A volcano",
 ]
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
@@ -61,9 +61,9 @@ for prompt in PROMPTS:
 
     for aff_idx in range(3):
         for aff_val in AFFECT_VALS:
-            if aff_val == None:
+            if aff_val is None:
                 v_name = "noAff"
-            
+
             else:
                 v_name = f"{aff_names[aff_idx]}_{round(100*aff_val)}"
                 aff_val = torch.tensor(aff_val, device=device, requires_grad=False)
@@ -76,7 +76,9 @@ for prompt in PROMPTS:
                 for channel in range(77):  # channel 0 has no info
                     aff_val.requires_grad = False
                     aff_val = aff_val.detach()
-                    print_progress_bar(channel + 1, 77, channel + 1, suffix="-- Channel:")
+                    print_progress_bar(
+                        channel + 1, 77, channel + 1, suffix="-- Channel:"
+                    )
 
                     path = f"{os.environ.get('MODEL_PATH')}/data_ch_{channel}.pkl"
 
@@ -132,7 +134,7 @@ for prompt in PROMPTS:
                 )
                 if aff_val is not None:
                     stable_diffuser.override_zz(zz)
-                    
+
                 stable_diffuser.run_diffusion(
                     alt_savepath=folder, im_name=f"_{v_name}", batch_n=batch
                 )

@@ -20,7 +20,7 @@ AFF_WEIGHT = 500
 FOLDER = renum_path("results/exploration_0")
 RECOMPUTE_MEANS = False
 N_SAMPLES = 12
-AFFECT_VALS = [0., 1.]
+AFFECT_VALS = [0.0, 1.0]
 PROMPTS = [
     "Lion",
     "Elephant",
@@ -28,21 +28,14 @@ PROMPTS = [
     "Puppy",
     "Snake",
     "Spider",
-    "Wasp",   
+    "Wasp",
     "House on fire",
     "Storm",
     "House overlooking the ocean",
     "Crocodile",
 ]
 
-aux_prompts = [
-    "happy",
-    "unhappy",
-    "calm",
-    "excited",
-    "submissive",
-    "dominant"
-]
+aux_prompts = ["happy", "unhappy", "calm", "excited", "submissive", "dominant"]
 
 
 config = OmegaConf.load(os.environ.get("SD_CONFIG"))
@@ -138,14 +131,12 @@ for prompt in PROMPTS:
     stable_diffuser = StableDiffuser()
     for batch in range(int(np.ceil(N_SAMPLES / 3))):
         stable_diffuser.initialize(
-            prompt=prompt,
-            start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
+            prompt=prompt, start_code=start_code[3 * batch : 3 * (batch + 1), :, :, :],
         )
         stable_diffuser.run_diffusion(
-            alt_savepath=folder, im_name=f"_no_aff", batch_n=batch
+            alt_savepath=folder, im_name="_no_aff", batch_n=batch
         )
 
-    
     for aux_prompt in aux_prompts:
 
         for batch in range(int(np.ceil(N_SAMPLES / 3))):

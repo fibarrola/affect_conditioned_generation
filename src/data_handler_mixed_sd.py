@@ -47,9 +47,25 @@ class DataHandler:
         V_img = self.scaler_V.scale(self.V_img)
         dataset_txt = TensorDataset(Z_txt, V_txt, self.Vsd_txt)
         dataset_img = TensorDataset(Z_img, V_img, self.Vsd_img)
-        (ds_train, ds_test) = random_split(dataset_txt, [round(len(dataset_txt) * train_ratio), round(len(dataset_txt) * (1 - train_ratio))])
-        self.txt_train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
+        (ds_train, ds_test) = random_split(
+            dataset_txt,
+            [
+                round(len(dataset_txt) * train_ratio),
+                round(len(dataset_txt) * (1 - train_ratio)),
+            ],
+        )
+        self.txt_train_loader = DataLoader(
+            ds_train, batch_size=batch_size, shuffle=False
+        )
         self.txt_test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)
-        (ds_train, ds_test) = random_split(dataset_img, [round(len(dataset_img) * train_ratio), round(len(dataset_img) * (1 - train_ratio))])
-        self.img_train_loader = DataLoader(ds_train, batch_size=batch_size, shuffle=False)
+        (ds_train, ds_test) = random_split(
+            dataset_img,
+            [
+                round(len(dataset_img) * train_ratio),
+                round(len(dataset_img) * (1 - train_ratio)),
+            ],
+        )
+        self.img_train_loader = DataLoader(
+            ds_train, batch_size=batch_size, shuffle=False
+        )
         self.img_test_loader = DataLoader(ds_test, batch_size=batch_size, shuffle=False)

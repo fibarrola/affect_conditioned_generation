@@ -96,7 +96,7 @@ for epoch in range(config.num_epochs):
             output = data_handler.scaler_V.unscale(output)
             loss = criterion(output, label)
             valid_loss += loss.item() * data.size(0)
-            l1_loss_txt += torch.sum((output - label)**2 / 8).item()
+            l1_loss_txt += torch.sum((output - label) ** 2 / 8).item()
             r_txt += threshold_count(output, label, sds) * data.size(0)
 
         for data, label, sds in data_handler.img_test_loader:
@@ -107,7 +107,7 @@ for epoch in range(config.num_epochs):
             loss = criterion(output, label)
             valid_loss += loss.item() * data.size(0)
             # l1_loss_img += torch.sum(torch.abs(output - label) / 8).item()
-            l1_loss_img += torch.sum((output - label)**2 / 8).item()
+            l1_loss_img += torch.sum((output - label) ** 2 / 8).item()
             r_img += threshold_count(output, label, sds) * data.size(0)
 
         train_loss = train_loss / (
@@ -143,5 +143,5 @@ for epoch in range(config.num_epochs):
                 torch.save(mlp.state_dict(), 'data/model_mixed_mse.pt')
                 valid_loss_min = valid_loss
 
-with open(f"data/loss_hist_8_mse.pkl", "wb") as f:
+with open("data/loss_hist_8_mse.pkl", "wb") as f:
     pickle.dump(loss_hist, f)
