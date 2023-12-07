@@ -3,41 +3,7 @@
 
 Images of "A flaming landscape"  generated with VQGAN+CLIP and affect control to make you feel...
 
-<div style="display:flex">
-<div style="padding-right:1em">
-Happy (high Valence)
-
-<img src='public_data/flaming_landscape_highV.png' width='256'>
-</div>
-<div style="padding-right:1em">
-Excited (high Arousal)
-
-<img src='public_data/flaming_landscape_highA.png' width='256'>
-</div>
-<div style="padding-right:1em">
-In control (high Dominance)
-
-<img src='public_data/flaming_landscape_highD.png' width='256'>
-</div>
-</div>
-<br>
-<div style="display:flex">
-<div style="padding-right:1em">
-Unhappy (low Valence)
-
-<img src='public_data/flaming_landscape_lowV.png' width='256'>
-</div>
-<div style="padding-right:1em">
-Calm (low Arousal)
-
-<img src='public_data/flaming_landscape_lowA.png' width='256'>
-</div>
-<div style="padding-right:1em">
-Submissive (low Dominance)
-
-<img src='public_data/flaming_landscape_lowD.png' width='256'>
-</div>
-</div>
+![teaser](public_data/teaser.png)
 
 <br>
 
