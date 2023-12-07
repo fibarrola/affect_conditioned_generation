@@ -1,6 +1,5 @@
 import torch
 import pandas as pd
-from src.scaler import Scaler
 from torch.utils.data import random_split, TensorDataset, DataLoader
 import numpy as np
 from omegaconf import OmegaConf
@@ -29,31 +28,28 @@ def load_model_from_config(config, ckpt, verbose=False):
 
 
 class DataHandlerBERT:
-    def __init__(self, csv_path):
+    def __init__(self):
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-        self.df = pd.read_csv(csv_path).dropna()
-        config = OmegaConf.load(
-            "stable_diffusion/configs/stable-diffusion/v1-inference.yaml"
-        )
-        self.model = load_model_from_config(
-            config,
-            "stable_diffusion/models/ldm/stable-diffusion-v1/v1-5-pruned-emaonly.ckpt",
-        )
 
     @torch.no_grad()
     def preprocess(
         self,
+        csv_path,
         savepath,
+        sdconfig,
+        sdmodel,
         word_type=None,
-        z_scaling='none',
-        v_scaling='none',
+        v_scaling=False,
         word_batch_size=2048,
         channel=9,
     ):
+        self.df = pd.read_csv(csv_path).dropna()
+        config = OmegaConf.load(sdconfig)
+        self.model = load_model_from_config(config, sdmodel)
         torch.cuda.empty_cache()
         fil_df = self.df[self.df["Type"] == word_type] if word_type else self.df
         self.words = list(fil_df["Word"])
-        Z = torch.tensor([], device=self.device)
+        self.Z = torch.tensor([], device=self.device)
         torch.cuda.empty_cache()
         for m in range(
             int(np.ceil(len(self.words) / word_batch_size))
@@ -65,24 +61,28 @@ class DataHandlerBERT:
                 Z_subset = self.model.get_learned_conditioning(words_subset)[
                     :, channel, :
                 ]
-                Z = torch.cat([Z, Z_subset], 0)
+                self.Z = torch.cat([self.Z, Z_subset], 0)
                 if len(self.words) <= (m + 1) * word_batch_size:
                     break
 
         dim_names = ['V.Mean.Sum', 'A.Mean.Sum', 'D.Mean.Sum']
-        V = torch.tensor(
+        self.V = torch.tensor(
             fil_df[dim_names].values, device=self.device, dtype=torch.float32
         )
-        sd_dim_names = ['V.SD.Sum', 'A.SD.Sum', 'D.SD.Sum']
-        Vsd = torch.tensor(
-            fil_df[sd_dim_names].values, device=self.device, dtype=torch.float32
-        )
+
+        if v_scaling:
+            self.vmax, _ = torch.max(self.V, dim=0)
+            self.vmin, _ = torch.min(self.V, dim=0)
+            # self.V = (self.V - self.vmin) / (self.vmax - self.vmin + 1e-9)
+            ############# WHAAAAAAAAAAAAAAT ERASE THIIIIIIIIIIIIIIIIIISSSSSSSSSSSSSSSSSSS
+            # self.V = self.V * 0.8 + 0.1
+            self.V = (self.V - 1) / 8
+
         data = {
-            "Z": Z,
-            "V": V,
-            "Vsd": Vsd,
-            "z_scaling": z_scaling,
-            "v_scaling": v_scaling,
+            "Z": self.Z,
+            "V": self.V,
+            "vmax": self.vmax,
+            "vmin": self.vmin,
         }
         with open(savepath, 'wb') as f:
             pickle.dump(data, f)
@@ -93,15 +93,12 @@ class DataHandlerBERT:
             data = pickle.load(f)
         self.Z = data["Z"]
         self.V = data["V"]
-        self.Vsd = data["Vsd"]
-        self.scaler_Z = Scaler(self.Z, method=data["z_scaling"])
-        self.scaler_V = Scaler(self.V, method=data["v_scaling"])
+        self.vmin = data["vmin"]
+        self.vmax = data["vmax"]
 
     @torch.no_grad()
     def build_datasets(self, train_ratio=0.7, batch_size=512):
-        Z = self.scaler_Z.scale(self.Z)
-        V = self.scaler_V.scale(self.V)
-        dataset = TensorDataset(Z, V, self.Vsd)
+        dataset = TensorDataset(self.Z, self.V)
         (ds_train, ds_test) = random_split(
             dataset,
             [

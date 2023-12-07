@@ -2,7 +2,7 @@ import torch
 import copy
 from src.mlp import MLP
 from stable_diffusion.scripts.stable_diffuser import StableDiffuser
-from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
+from src.data_handler_bert import DataHandlerBERT, load_model_from_config
 from src.utils import print_progress_bar, renum_path
 from omegaconf import OmegaConf
 import os
