@@ -1,5 +1,5 @@
 from src.mlp import MLP
-from src.data_handler_bert_v2 import DataHandlerBERT
+from src.data_handler_bert import DataHandlerBERT
 import torch
 import pickle
 import os

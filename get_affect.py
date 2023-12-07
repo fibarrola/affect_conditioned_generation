@@ -1,5 +1,5 @@
 from src.mlp import MLP
-from src.data_handler_bert_v2 import DataHandlerBERT, load_model_from_config
+from src.data_handler_bert import DataHandlerBERT, load_model_from_config
 from omegaconf import OmegaConf
 import os
 import torch

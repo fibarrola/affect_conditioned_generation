@@ -83,6 +83,7 @@ for p, prompt in enumerate(descriptions):
                 y=fil_df2["score"],
                 name=name,
                 marker={'color': colors[n]},
+                showlegend = p==0
             ),
             row=1,
             col=p + 1,
