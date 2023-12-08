@@ -3,7 +3,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-SHOW_RANKINGS = True
+SHOW_RANKINGS = False
 SHOW_RATINGS = False
 
 df = pd.read_csv("data/Affect_SQ (Responses) - Form responses 1.csv")
@@ -218,13 +218,16 @@ for col_name in df.columns[4:]:
             {
                 "answer": df[col_name].iloc[n],
                 "right_answer": right_answer,
-                "error": abs(right_answer - df[col_name].iloc[n]),
+                "error": abs(right_answer - df[col_name].iloc[n])/8,
                 "generator": generator,
                 "affect_dim": affect_dim,
             }
         )
 
 rating_data = pd.DataFrame(rating_data)
+errors = list(rating_data["error"])
+print(np.mean(errors), np.std(errors))
+
 
 
 if SHOW_RATINGS:
@@ -320,3 +323,70 @@ if SHOW_RATINGS:
         legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
     fig.show()
+
+
+
+
+
+
+# Rating stats
+
+rating_order = []
+col_names = df.columns[4:]
+n_sets = len(col_names) // 3
+for n_set in range(n_sets):
+    cols_set = col_names[3 * n_set : 3 * (n_set + 1)]
+    right_answers = [df[col_name].iloc[0] for col_name in cols_set]
+    for n in range(1, len(df)):
+        for inset_idx in range(3):
+
+            k = int(cols_set[inset_idx][:2]) - 1
+            generator = "VQGAN+CLIP" if (k // 6) % 2 == 0 else "StableDifussion"
+            affect_dim = (
+                "Valence"
+                if (k // 12) % 3 == 0
+                else ("Arousal" if (k // 12) % 3 == 1 else "Dominance")
+            )
+
+            answers = [df[col_name].iloc[n] for col_name in cols_set]
+            this_answer = answers.pop(inset_idx)
+            if right_answers[inset_idx] == 1:
+                if this_answer < answers[0] and this_answer < answers[1]:
+                    correctness = "Correct"
+                elif this_answer > answers[0] or this_answer > answers[1]:
+                    correctness = "Incorrect"
+                else:
+                    correctness = "Neutral"
+
+            elif right_answers[inset_idx] == 9:
+                if this_answer > answers[0] and this_answer > answers[1]:
+                    correctness = "Correct"
+                elif this_answer < answers[0] or this_answer < answers[1]:
+                    correctness = "Incorrect"
+                else:
+                    correctness = "Neutral"
+
+            else:
+                if this_answer > answers[0] and this_answer < answers[1]:
+                    correctness = "Correct"
+                elif this_answer < answers[0] and this_answer > answers[1]:
+                    correctness = "Correct"
+                elif this_answer > answers[0] and this_answer > answers[1]:
+                    correctness = "Incorrect"
+                elif this_answer < answers[0] and this_answer < answers[1]:
+                    correctness = "Incorrect"
+                else:
+                    correctness = "Neutral"
+
+            rating_order.append(
+                {
+                    "is correct": correctness,
+                    "generator": generator,
+                    "affect_dim": affect_dim,
+                }
+            )
+
+rating_order = pd.DataFrame(rating_order)
+print(len(rating_order[rating_order["is correct"]=="Correct"])/len(rating_order))
+print(len(rating_order[rating_order["is correct"]=="Incorrect"])/len(rating_order))
+print(len(rating_order[rating_order["is correct"]=="Neutral"])/len(rating_order))
