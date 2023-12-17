@@ -38,7 +38,7 @@ target_v = [args.V, args.A, args.D]
 target_dims = [k for k in range(3) if not target_v[k] is None]
 target_v = torch.tensor(
     [0.5 if v is None else v for v in target_v], device=device, requires_grad=False
-) # 0.5 is just a placeholder
+)  # 0.5 is just a placeholder
 
 mlp = MLP(h0=768).to(device)
 criterion = torch.nn.MSELoss(reduction='mean')
@@ -71,8 +71,7 @@ for channel in range(77):
                 loss += criterion(z, z_0[:, channel, :])
                 for dim in target_dims:
                     loss += args.reg * criterion(
-                        mlp(z)[:, dim],
-                        target_v[dim : dim + 1],
+                        mlp(z)[:, dim], target_v[dim : dim + 1],
                     )
                 loss.backward()
                 opt.step()

@@ -218,7 +218,7 @@ for col_name in df.columns[4:]:
             {
                 "answer": df[col_name].iloc[n],
                 "right_answer": right_answer,
-                "error": abs(right_answer - df[col_name].iloc[n])/8,
+                "error": abs(right_answer - df[col_name].iloc[n]) / 8,
                 "generator": generator,
                 "affect_dim": affect_dim,
             }
@@ -227,7 +227,6 @@ for col_name in df.columns[4:]:
 rating_data = pd.DataFrame(rating_data)
 errors = list(rating_data["error"])
 print(np.mean(errors), np.std(errors))
-
 
 
 if SHOW_RATINGS:
@@ -325,10 +324,6 @@ if SHOW_RATINGS:
     fig.show()
 
 
-
-
-
-
 # Rating stats
 
 rating_order = []
@@ -387,6 +382,6 @@ for n_set in range(n_sets):
             )
 
 rating_order = pd.DataFrame(rating_order)
-print(len(rating_order[rating_order["is correct"]=="Correct"])/len(rating_order))
-print(len(rating_order[rating_order["is correct"]=="Incorrect"])/len(rating_order))
-print(len(rating_order[rating_order["is correct"]=="Neutral"])/len(rating_order))
+print(len(rating_order[rating_order["is correct"] == "Correct"]) / len(rating_order))
+print(len(rating_order[rating_order["is correct"] == "Incorrect"]) / len(rating_order))
+print(len(rating_order[rating_order["is correct"] == "Neutral"]) / len(rating_order))
