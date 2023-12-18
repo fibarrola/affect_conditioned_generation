@@ -1,4 +1,4 @@
-from src.affective_generator2 import AffectiveGenerator
+from src.affective_generator import AffectiveGenerator
 import torch
 import os
 from tqdm.notebook import tqdm

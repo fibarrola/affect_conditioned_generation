@@ -25,7 +25,7 @@ class CLIPAffDraw:
         self.drawing = Drawing(canvas_w, canvas_h)
         self.drawing_area = {'x0': 0, 'x1': 1, 'y0': 0, 'y1': 1}
         self.num_augs = num_augs
-        self.mlp = MLP(param_env="mlp.env").to('cuda:0')
+        self.mlp = MLP().to('cuda:0')
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
         with open('data/data_handler_mixed.pkl', 'rb') as f:
             self.data_handler = pickle.load(f)
@@ -35,19 +35,16 @@ class CLIPAffDraw:
     def process_text(
         self,
         prompt,
-        use_affect=False,
         neg_prompt_1=None,
         neg_prompt_2=None,
         v=[0.5, 0.5, 0.5],
-        aff_idx=None,
+        aff_inds=[],
     ):
-        self.aff_idx = aff_idx
-        self.use_affect = use_affect
-        print("Use affect scores: ", self.use_affect)
-        if self.use_affect:
-            self.target_affect = torch.tensor(
-                v, device=self.device, requires_grad=False
-            )
+        self.aff_inds = aff_inds
+        self.target_affect = torch.matmul(
+            torch.tensor(v, device=self.device, requires_grad=False).unsqueeze(1),
+            torch.ones((1, 4), device=self.device),
+        )
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)
@@ -137,18 +134,13 @@ class CLIPAffDraw:
                     )
                     * 0.3
                 )
-        if self.use_affect:
-            if self.aff_idx is None:
-                loss_aff = F.mse_loss(
-                    self.mlp(img_features.to(torch.float32)), self.target_affect
-                )
-            else:
-                loss_aff = F.mse_loss(
-                    self.mlp(img_features.to(torch.float32))[:, self.aff_idx],
-                    self.target_affect,
-                )
-        else:
-            loss_aff = torch.tensor([0], device=self.device)
+
+        loss_aff = 0
+        for aff_idx in self.aff_inds:
+            loss_aff += F.mse_loss(
+                self.mlp(img_features.to(torch.float32))[:, aff_idx],
+                self.target_affect[aff_idx, :],
+            )
 
         loss = loss_sem + self.aff_weight * loss_aff
 

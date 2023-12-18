@@ -16,13 +16,13 @@ parser.add_argument(
     "--num_iter", type=int, help="maximum algorithm iterations", default=1500
 )
 parser.add_argument(
-    "--V", type=float, help="Valence, in [0,1]", default=0.5,
+    "--V", type=float, help="Valence, in [0,1]", default=None,
 )
 parser.add_argument(
-    "--A", type=float, help="Arousal, in [0,1]", default=0.5,
+    "--A", type=float, help="Arousal, in [0,1]", default=None,
 )
 parser.add_argument(
-    "--D", type=float, help="Dominance, in [0,1]", default=0.5,
+    "--D", type=float, help="Dominance, in [0,1]", default=None,
 )
 parser.add_argument(
     "--save_path", type=str, help="subfolder for saving results", default="clipdraw"
@@ -36,12 +36,15 @@ save_path = Path("results/").joinpath(args.save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 save_path = str(save_path) + '/'
 
+aff_vals = [args.V, args.A, args.D]
+
 cicada = CLIPAffDraw()
 cicada.process_text(
     prompt=args.prompt,
     neg_prompt_1="Written words.",
     neg_prompt_2="Text",
-    v=[args.V, args.A, args.D],
+    v=[v if v is not None else 0.5 for v in aff_vals],
+    aff_inds=[k for k in range(3) if aff_vals[k] is not None],
 )
 
 cicada.add_random_shapes(args.num_paths)
