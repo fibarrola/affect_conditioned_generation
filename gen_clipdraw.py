@@ -44,7 +44,7 @@ cicada.process_text(
     neg_prompt_1="Written words.",
     neg_prompt_2="Text",
     v=[v if v is not None else 0.5 for v in aff_vals],
-    aff_inds=[k for k in range(3) if aff_vals[k] is not None]
+    aff_inds=[k for k in range(3) if aff_vals[k] is not None],
 )
 
 cicada.add_random_shapes(args.num_paths)

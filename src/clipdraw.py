@@ -41,9 +41,10 @@ class CLIPAffDraw:
         aff_inds=[],
     ):
         self.aff_inds = aff_inds
-        self.target_affect = torch.matmul(torch.tensor(
-            v, device=self.device, requires_grad=False
-        ).unsqueeze(1), torch.ones((1,4), device=self.device))
+        self.target_affect = torch.matmul(
+            torch.tensor(v, device=self.device, requires_grad=False).unsqueeze(1),
+            torch.ones((1, 4), device=self.device),
+        )
         self.use_neg_prompts = not (neg_prompt_1 is None)
         tokens = clip.tokenize(prompt).to(self.device)
         self.text_features = self.model.encode_text(tokens)
@@ -138,7 +139,7 @@ class CLIPAffDraw:
         for aff_idx in self.aff_inds:
             loss_aff += F.mse_loss(
                 self.mlp(img_features.to(torch.float32))[:, aff_idx],
-                self.target_affect[aff_idx,:],
+                self.target_affect[aff_idx, :],
             )
 
         loss = loss_sem + self.aff_weight * loss_aff
