@@ -33,7 +33,7 @@ class AffectiveGenerator:
         im_size=[480, 480],
         cutn=64,
     ):
-        self.mlp = MLP(param_env="mlp.env").to('cuda:0')
+        self.mlp = MLP().to('cuda:0')
         self.mlp.load_state_dict(torch.load('data/model_mixed.pt'))
         with open('data/data_handler_mixed.pkl', 'rb') as f:
             self.data_handler = pickle.load(f)
@@ -77,6 +77,13 @@ class AffectiveGenerator:
             torch.ones((self.make_cutouts.cutn, 1), device=device),
             torch.tensor([v], device=device, requires_grad=False),
         )
+
+    @torch.no_grad()
+    def get_affect(self, prompt):
+        tokens = clip.tokenize([prompt]).to(device)
+        z = self.clip_model.encode_text(tokens).to(torch.float32)
+        z = self.data_handler.scaler_Z.scale(z)
+        return self.mlp(z)
 
     @torch.no_grad()
     def initialize(
